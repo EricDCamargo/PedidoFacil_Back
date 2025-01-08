@@ -21,6 +21,7 @@ import { FinishOrderController } from './controllers/order/FinishOrderController
 import { RemoveUserController } from './controllers/user/RemoveUserController'
 import { ListUsersController } from './controllers/user/ListUsersController'
 import { UpdateUserController } from './controllers/user/UpdateUserController'
+import { DeleteCategoryController } from './controllers/category/DeleteCategoryController'
 
 const router = Router()
 
@@ -38,34 +39,21 @@ router.put('/users', isAuthenticated, new UpdateUserController().handle)
 
 router.post('/category', isAuthenticated, new CreateCategoryController().handle)
 router.get('/category', isAuthenticated, new ListCategoryController().handle)
+router.delete('/category', isAuthenticated, new DeleteCategoryController().handle)
 
 // -- Product Routes --
 
-router.post(
-  '/product',
-  isAuthenticated,
-  upload.single('file'),
-  new CreateProductController().handle
-)
-router.get(
-  '/category/product',
-  isAuthenticated,
-  new ListByCategoryController().handle
-)
+router.post('/product', isAuthenticated, upload.single('file'), new CreateProductController().handle)
+router.get('/category/product', isAuthenticated, new ListByCategoryController().handle)
 
 // -- Order Routes --
 
 router.post('/order', isAuthenticated, new CreateOrderController().handle)
 router.delete('/order', isAuthenticated, new RemoveOrderController().handle)
 router.post('/order/add', isAuthenticated, new AddItemController().handle)
-router.delete(
-  '/order/remove',
-  isAuthenticated,
-  new RemoveItemController().handle
-)
+router.delete('/order/remove', isAuthenticated, new RemoveItemController().handle)
 
 router.put('/order/send', isAuthenticated, new SendOrderController().handle)
-
 router.get('/orders', isAuthenticated, new ListOrdersController().handle)
 router.get('/order/detail', isAuthenticated, new DetailOrderController().handle)
 
