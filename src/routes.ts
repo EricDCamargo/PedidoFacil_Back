@@ -23,6 +23,7 @@ import { ListUsersController } from './controllers/user/ListUsersController'
 import { UpdateUserController } from './controllers/user/UpdateUserController'
 import { RemoveCategoryController } from './controllers/category/RemoveCategoryController'
 import { RemoveProductController } from './controllers/product/RemoveProductController'
+import { UpdateProductController } from './controllers/product/UpdateProductController'
 
 const router = Router()
 
@@ -47,6 +48,7 @@ router.delete('/category', isAuthenticated, new RemoveCategoryController().handl
 router.post('/product', isAuthenticated, upload.single('file'), new CreateProductController().handle)
 router.get('/category/product', isAuthenticated, new ListByCategoryController().handle)
 router.delete('/product', isAuthenticated, new RemoveProductController().handle)
+router.put('/product', isAuthenticated, upload.single('file'), new UpdateProductController().handle)
 
 // -- Order Routes --
 
