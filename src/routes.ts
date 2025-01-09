@@ -24,6 +24,7 @@ import { UpdateUserController } from './controllers/user/UpdateUserController'
 import { RemoveCategoryController } from './controllers/category/RemoveCategoryController'
 import { RemoveProductController } from './controllers/product/RemoveProductController'
 import { UpdateProductController } from './controllers/product/UpdateProductController'
+import { ListProductsController } from './controllers/product/ListProductsController'
 
 const router = Router()
 
@@ -47,6 +48,7 @@ router.delete('/category', isAuthenticated, new RemoveCategoryController().handl
 
 router.post('/product', isAuthenticated, upload.single('file'), new CreateProductController().handle)
 router.get('/category/product', isAuthenticated, new ListByCategoryController().handle)
+router.get('/products', isAuthenticated, new ListProductsController().handle)
 router.delete('/product', isAuthenticated, new RemoveProductController().handle)
 router.put('/product', isAuthenticated, upload.single('file'), new UpdateProductController().handle)
 
