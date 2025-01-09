@@ -4,7 +4,7 @@ interface CategoryRequest {
   category_id: string
 }
 
-class DeleteCategoryService {
+class RemoveCategoryService {
   async execute({ category_id }: CategoryRequest) {
     const categoryExists = await prismaClient.category.findFirst({
       where: { id: category_id }
@@ -18,8 +18,8 @@ class DeleteCategoryService {
       where: { id: category_id }
     })
 
-    return { message: 'Category deleted successfully' }
+    return { message: 'Category removed successfully' }
   }
 }
 
-export { DeleteCategoryService }
+export { RemoveCategoryService }
