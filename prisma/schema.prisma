@@ -35,7 +35,7 @@ model Category {
 model Product {
   id String @id @default(uuid())
   name String
-  price String
+  price Float
   description String
   banner String
   created_at DateTime? @default(now())
@@ -45,35 +45,59 @@ model Product {
 
   @@map("products")
   category_id String
-   Items Item[]
-}
-
-model Order {
-  id String @id @default(uuid())
-  table Int
-  status Boolean @default(false)
-  draft Boolean @default(true)
-  name String? 
-
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
-
-  @@map("orders")
   Items Item[]
 }
 
+model Table {
+  id          String    @id @default(uuid())
+  number      Int       @unique
+  status      String    @default("available") // available, occupied, reserved
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  orders      Order[]
+
+  @@map("tables")
+}
+
+model Order {
+  id          String    @id @default(uuid())
+  table_id    String
+  table       Table     @relation(fields: [table_id], references: [id])
+  status      String    @default("draft") // draft, in_progress, completed, closed
+  name        String?
+  total       Float?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  items       Item[]
+  payments    Payment[]
+
+  @@map("orders")
+}
+
 model Item {
-  id String @id @default(uuid())
-  amount Int
+  id          String    @id @default(uuid())
+  amount      Int
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
 
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
-
-  order Order @relation(fields: [order_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
+  order       Order     @relation(fields: [order_id], references: [id])
+  product     Product   @relation(fields: [product_id], references: [id])
 
   @@map("items")
-  order_id String
-  product_id String
+  order_id    String
+  product_id  String
+}
 
+model Payment {
+  id             String    @id @default(uuid())
+  order_id       String
+  order          Order     @relation(fields: [order_id], references: [id])
+  amount         Float
+  payment_method String
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@map("payments")
 }

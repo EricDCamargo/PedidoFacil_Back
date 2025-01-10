@@ -3,24 +3,28 @@ import { CreateProductService } from '../../services/product/CreateProductServic
 
 class CreateProductController {
   async handle(req: Request, res: Response) {
-    const { name, price, description, banner, category_id } = req.body
+    const { name, price, description, category_id } = req.body
 
     const createProductService = new CreateProductService()
 
     if (!req.file) {
       throw new Error('error uploading product file')
     } else {
-      const { originalname, filename: banner } = req.file
+      const { filename: banner } = req.file
 
-      const product = await createProductService.execute({
-        name,
-        price,
-        description,
-        banner,
-        category_id
-      })
+      try {
+        const product = await createProductService.execute({
+          name,
+          price: parseFloat(price), 
+          description,
+          banner,
+          category_id
+        })
 
-      return res.json(product)
+        return res.json(product)
+      } catch (error: any) {
+        return res.status(400).json({ error: error.message })
+      }
     }
   }
 }

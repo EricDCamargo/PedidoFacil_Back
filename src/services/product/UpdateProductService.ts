@@ -3,7 +3,7 @@ import prismaClient from '../../prisma'
 interface UpdateProductRequest {
   product_id: string
   name?: string
-  price?: string
+  price?: number
   description?: string
   banner?: string
   category_id?: string

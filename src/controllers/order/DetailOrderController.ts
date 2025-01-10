@@ -7,11 +7,15 @@ class DetailOrderController {
 
     const detailOrder = new DetailOrderService()
 
-    const orders = await detailOrder.execute({
-      order_id
-    })
+    try {
+      const order = await detailOrder.execute({
+        order_id
+      })
 
-    return res.json(orders)
+      return res.json(order)
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message })
+    }
   }
 }
 

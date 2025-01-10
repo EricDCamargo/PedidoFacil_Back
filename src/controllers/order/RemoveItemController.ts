@@ -7,11 +7,15 @@ class RemoveItemController {
 
     const removeItem = new RemoveItemService()
 
-    const order = await removeItem.execute({
-      item_id
-    })
+    try {
+      const result = await removeItem.execute({
+        item_id
+      })
 
-    return res.json(order)
+      return res.json(result)
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message })
+    }
   }
 }
 

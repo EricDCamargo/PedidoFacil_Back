@@ -7,11 +7,15 @@ class SendOrderController {
 
     const sendOrder = new SendOrderService()
 
-    const order = await sendOrder.execute({
-      order_id
-    })
+    try {
+      const order = await sendOrder.execute({
+        order_id
+      })
 
-    return res.json(order)
+      return res.json(order)
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message })
+    }
   }
 }
 

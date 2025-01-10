@@ -6,15 +6,28 @@ interface OrderRequest {
 
 class FinishOrderService {
   async execute({ order_id }: OrderRequest) {
-    const order = await prismaClient.order.update({
-      where: {
-        id: order_id
-      },
-      data: {
-        status: true
-      }
+    // Verificar se o pedido existe e está no status 'in_progress'
+    const order = await prismaClient.order.findUnique({
+      where: { id: order_id },
     })
-    return order
+
+    if (!order) {
+      throw new Error('Pedido não encontrado.')
+    }
+
+    if (order.status !== 'in_progress') {
+      throw new Error('O pedido não está no status "in_progress".')
+    }
+
+    // Atualizar o status do pedido para 'completed'
+    const updatedOrder = await prismaClient.order.update({
+      where: { id: order_id },
+      data: {
+        status: 'completed',
+      },
+    })
+
+    return updatedOrder
   }
 }
 

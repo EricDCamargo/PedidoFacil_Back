@@ -7,13 +7,17 @@ class AddItemController {
 
     const addItem = new AddItemService()
 
-    const order = await addItem.execute({
-      order_id,
-      product_id,
-      amount
-    })
+    try {
+      const item = await addItem.execute({
+        order_id,
+        product_id,
+        amount
+      })
 
-    return res.json(order)
+      return res.json(item)
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message })
+    }
   }
 }
 

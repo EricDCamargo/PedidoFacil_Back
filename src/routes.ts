@@ -25,6 +25,11 @@ import { RemoveCategoryController } from './controllers/category/RemoveCategoryC
 import { RemoveProductController } from './controllers/product/RemoveProductController'
 import { UpdateProductController } from './controllers/product/UpdateProductController'
 import { ListProductsController } from './controllers/product/ListProductsController'
+import { CreateTableController } from './controllers/table/CreateTableController'
+import { ListTablesController } from './controllers/table/ListTablesController'
+import { UpdateTableStatusController } from './controllers/table/UpdateTableStatusController'
+import { GetTableDetailsController } from './controllers/table/GetTableDetailsController'
+import { CloseTableController } from './controllers/table/CloseTableController'
 
 const router = Router()
 
@@ -39,13 +44,11 @@ router.get('/users', isAuthenticated, new ListUsersController().handle)
 router.put('/users', isAuthenticated, new UpdateUserController().handle)
 
 // -- Category Routes --
-
 router.post('/category', isAuthenticated, new CreateCategoryController().handle)
 router.get('/category', isAuthenticated, new ListCategoryController().handle)
 router.delete('/category', isAuthenticated, new RemoveCategoryController().handle)
 
 // -- Product Routes --
-
 router.post('/product', isAuthenticated, upload.single('file'), new CreateProductController().handle)
 router.get('/category/product', isAuthenticated, new ListByCategoryController().handle)
 router.get('/products', isAuthenticated, new ListProductsController().handle)
@@ -53,16 +56,20 @@ router.delete('/product', isAuthenticated, new RemoveProductController().handle)
 router.put('/product', isAuthenticated, upload.single('file'), new UpdateProductController().handle)
 
 // -- Order Routes --
-
 router.post('/order', isAuthenticated, new CreateOrderController().handle)
 router.delete('/order', isAuthenticated, new RemoveOrderController().handle)
 router.post('/order/add', isAuthenticated, new AddItemController().handle)
 router.delete('/order/remove', isAuthenticated, new RemoveItemController().handle)
-
 router.put('/order/send', isAuthenticated, new SendOrderController().handle)
 router.get('/orders', isAuthenticated, new ListOrdersController().handle)
 router.get('/order/detail', isAuthenticated, new DetailOrderController().handle)
-
 router.put('/order/finish', isAuthenticated, new FinishOrderController().handle)
+
+// -- Table Routes --
+router.post('/table', isAuthenticated, new CreateTableController().handle)
+router.get('/tables', isAuthenticated, new ListTablesController().handle)
+router.put('/table/status', isAuthenticated, new UpdateTableStatusController().handle)
+router.get('/table/detail', isAuthenticated, new GetTableDetailsController().handle)
+router.put('/table/close', isAuthenticated, new CloseTableController().handle)
 
 export { router }

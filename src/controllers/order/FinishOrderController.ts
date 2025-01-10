@@ -7,11 +7,15 @@ class FinishOrderController {
 
     const finishOrderService = new FinishOrderService()
 
-    const order = await finishOrderService.execute({
-      order_id
-    })
+    try {
+      const order = await finishOrderService.execute({
+        order_id
+      })
 
-    return res.json(order)
+      return res.json(order)
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message })
+    }
   }
 }
 

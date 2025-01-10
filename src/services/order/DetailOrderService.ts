@@ -6,17 +6,26 @@ interface DetailRequest {
 
 class DetailOrderService {
   async execute({ order_id }: DetailRequest) {
-    const orders = await prismaClient.item.findMany({
+    const order = await prismaClient.order.findUnique({
       where: {
-        order_id: order_id
+        id: order_id
       },
       include: {
-        product: true,
-        order: true
+        items: {
+          include: {
+            product: true
+          }
+        },
+        table: true, // Inclui a mesa associada
+        payments: true // Inclui os pagamentos associados
       }
     })
 
-    return orders
+    if (!order) {
+      throw new Error('Pedido não encontrado.')
+    }
+
+    return order
   }
 }
 
