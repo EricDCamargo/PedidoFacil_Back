@@ -1,3 +1,4 @@
+import { TableStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
 
 interface TableRequest {
@@ -6,7 +7,8 @@ interface TableRequest {
 
 class CreateTableService {
   async execute({ number }: TableRequest) {
-    // Verificar se a mesa já existe
+    const { available } = TableStatus
+
     const tableExists = await prismaClient.table.findUnique({
       where: { number }
     })
@@ -15,11 +17,10 @@ class CreateTableService {
       throw new Error('Mesa já cadastrada.')
     }
 
-    // Criar a nova mesa
     const table = await prismaClient.table.create({
       data: {
         number,
-        status: 'available'
+        status: available
       }
     })
 

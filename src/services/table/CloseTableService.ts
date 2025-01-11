@@ -1,3 +1,4 @@
+import { OrderStatus, TableStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
 
 interface CloseTableRequest {
@@ -7,7 +8,8 @@ interface CloseTableRequest {
 
 class CloseTableService {
   async execute({ table_id, payment_method }: CloseTableRequest) {
-    // Verificar se a mesa existe e está ocupada
+    const { available, occupied } = TableStatus
+    const { completed, closed } = OrderStatus
     const table = await prismaClient.table.findUnique({
       where: { id: table_id }
     })
@@ -16,7 +18,7 @@ class CloseTableService {
       throw new Error('Mesa não encontrada.')
     }
 
-    if (table.status !== 'occupied') {
+    if (table.status !== occupied) {
       throw new Error('A mesa não está ocupada.')
     }
 
@@ -24,40 +26,35 @@ class CloseTableService {
       throw new Error('Forma de pagamento não informada.')
     }
 
-    // Obter todos os pedidos completados da mesa
     const orders = await prismaClient.order.findMany({
-      where: { table_id, status: 'completed' }
+      where: { table_id, status: completed }
     })
 
     if (orders.length === 0) {
       throw new Error('Não há pedidos para fechar.')
     }
 
-    // Calcular o valor total dos pedidos
     const totalAmount = orders.reduce(
       (total, order) => total + (order.total || 0),
       0
     )
 
-    // Registrar o pagamento
     await prismaClient.payment.create({
       data: {
-        order_id: orders[0].id, // Associar o pagamento ao primeiro pedido (ou criar um novo campo para associar a todos)
+        order_id: orders[0].id,
         amount: totalAmount,
         payment_method
       }
     })
 
-    // Atualizar o status dos pedidos para 'closed'
     await prismaClient.order.updateMany({
-      where: { table_id, status: 'completed' },
-      data: { status: 'closed' }
+      where: { table_id, status: completed },
+      data: { status: closed }
     })
 
-    // Atualizar o status da mesa para 'available'
     await prismaClient.table.update({
       where: { id: table_id },
-      data: { status: 'available' }
+      data: { status: available }
     })
 
     return { message: 'Conta fechada com sucesso' }

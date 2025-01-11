@@ -6,7 +6,6 @@ interface GetTableDetailsRequest {
 
 class GetTableDetailsService {
   async execute({ table_id }: GetTableDetailsRequest) {
-    // Verificar se a mesa existe
     const table = await prismaClient.table.findUnique({
       where: { id: table_id },
       include: {

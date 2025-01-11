@@ -1,3 +1,4 @@
+import { OrderStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
 
 interface OrderRequest {
@@ -6,6 +7,7 @@ interface OrderRequest {
 
 class FinishOrderService {
   async execute({ order_id }: OrderRequest) {
+    const { in_progress, completed } = OrderStatus
     const order = await prismaClient.order.findUnique({
       where: { id: order_id }
     })
@@ -14,15 +16,14 @@ class FinishOrderService {
       throw new Error('Pedido não encontrado.')
     }
 
-    if (order.status !== 'in_progress') {
+    if (order.status !== in_progress) {
       throw new Error('O pedido não está no status "in_progress".')
     }
 
-    // Atualizar o status do pedido para 'completed'
     const updatedOrder = await prismaClient.order.update({
       where: { id: order_id },
       data: {
-        status: 'completed'
+        status: completed
       }
     })
 
