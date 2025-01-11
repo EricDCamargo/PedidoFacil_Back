@@ -6,7 +6,6 @@ interface ItemRequest {
 
 class RemoveItemService {
   async execute({ item_id }: ItemRequest) {
-    // Verificar se o item existe
     const item = await prismaClient.item.findUnique({
       where: { id: item_id },
       include: { order: true, product: true }
@@ -16,12 +15,10 @@ class RemoveItemService {
       throw new Error('Item não encontrado.')
     }
 
-    // Remover o item do pedido
     await prismaClient.item.delete({
       where: { id: item_id }
     })
 
-    // Recalcular o total do pedido
     const order = await prismaClient.order.findUnique({
       where: { id: item.order_id },
       include: { items: { include: { product: true } } }

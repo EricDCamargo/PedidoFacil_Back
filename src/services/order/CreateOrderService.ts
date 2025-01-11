@@ -1,48 +1,49 @@
-import prismaClient from "../../prisma";
+import { OrderStatus, TableStatus } from '../../@types/types'
+import prismaClient from '../../prisma'
 
 interface OrderRequest {
-  table_id: string;
-  name?: string;
+  table_id: string
+  name?: string
 }
 
 class CreateOrderService {
   async execute({ table_id, name }: OrderRequest) {
+    const { draft, in_progress } = OrderStatus
+    const { occupied } = TableStatus
+
     const table = await prismaClient.table.findUnique({
-      where: { id: table_id },
-    });
+      where: { id: table_id }
+    })
 
     if (!table) {
-      throw new Error("Mesa não encontrada.");
+      throw new Error('Mesa não encontrada.')
     }
 
-    if (table.status === "occupied") {
-      throw new Error("A mesa não está disponível.");
-    }
     const existingOrders = await prismaClient.order.findMany({
       where: {
         table_id,
         status: {
-          in: ["draft", "in_progress"],
-        },
-      },
-    });
+          in: [draft, in_progress]
+        }
+      }
+    })
 
     if (existingOrders.length === 0) {
       await prismaClient.table.update({
         where: { id: table_id },
-        data: { status: "occupied" },
-      });
+        data: { status: occupied }
+      })
     }
     const order = await prismaClient.order.create({
       data: {
         table_id,
         name,
-        status: "draft",
-      },
-    });
+        status: draft
+      }
+    })
 
-    return order;
+    return order
   }
 }
 
-export { CreateOrderService };
+export { CreateOrderService }

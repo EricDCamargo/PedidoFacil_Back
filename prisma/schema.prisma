@@ -51,7 +51,7 @@ model Product {
 model Table {
   id          String    @id @default(uuid())
   number      Int       @unique
-  status      String    @default("available") // available, occupied, reserved
+  status      String    @default("available") 
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
 
@@ -64,7 +64,7 @@ model Order {
   id          String    @id @default(uuid())
   table_id    String
   table       Table     @relation(fields: [table_id], references: [id])
-  status      String    @default("draft") // draft, in_progress, completed, closed
+  status      String    @default("draft") 
   name        String?
   total       Float?
   created_at  DateTime  @default(now())

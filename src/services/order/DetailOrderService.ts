@@ -16,8 +16,8 @@ class DetailOrderService {
             product: true
           }
         },
-        table: true, // Inclui a mesa associada
-        payments: true // Inclui os pagamentos associados
+        table: true,
+        payments: true
       }
     })
 
