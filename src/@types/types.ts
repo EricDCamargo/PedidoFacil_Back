@@ -10,5 +10,9 @@ enum TableStatus {
   occupied = 'occupied',
   reserved = 'reserved'
 }
+enum Role {
+  admin = 'ADMIN',
+  user = 'USER'
+}
 
-export { OrderStatus, TableStatus }
+export { OrderStatus, TableStatus, Role }

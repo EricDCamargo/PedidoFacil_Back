@@ -9,9 +9,12 @@ class RemoveUserController {
 
     try {
       const result = await removeUser.execute({ user_id })
-      return res.json(result)
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message })
+      return res.status(200).json(result)
+    } catch (err) {
+      if (err.statusCode && err.message) {
+        return res.status(err.statusCode).json({ error: err.message })
+      }
+      return res.status(500).json({ error: 'Internal server error' })
     }
   }
 }

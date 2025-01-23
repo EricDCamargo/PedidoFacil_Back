@@ -7,9 +7,9 @@ class ListUsersController {
 
     try {
       const users = await listUsersService.execute()
-      return res.json(users)
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message })
+      return res.status(200).json(users)
+    } catch (err) {
+      return res.status(500).json({ error: 'Internal Server Error' })
     }
   }
 }

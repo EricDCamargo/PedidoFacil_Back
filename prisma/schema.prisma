@@ -10,12 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id String @id @default(uuid())
-  name String
-  email String
-  password String
+  id         String    @id @default(uuid())
+  name       String
+  email      String
+  password   String
+  role       Role
   created_at DateTime? @default(now())
   updated_at DateTime? @default(now())
 
@@ -23,81 +23,86 @@ model User {
 }
 
 model Category {
-  id String @id @default(uuid())
-  name String
+  id         String    @id @default(uuid())
+  name       String
   created_at DateTime? @default(now())
   updated_at DateTime? @default(now())
+  products   Product[]
 
   @@map("categories")
-  products Product[]
 }
 
 model Product {
-  id String @id @default(uuid())
-  name String
-  price Float
+  id          String    @id @default(uuid())
+  name        String
+  price       Float
   description String
-  banner String
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
+  banner      String
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
 
-  category Category @relation(fields: [category_id], references: [id])
+  category    Category @relation(fields: [category_id], references: [id])
+  category_id String
+  Items       Item[]
 
   @@map("products")
-  category_id String
-  Items Item[]
 }
 
 model Table {
-  id          String    @id @default(uuid())
-  number      Int       @unique
-  status      String    @default("available") 
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  id         String   @id @default(uuid())
+  number     Int      @unique
+  status     String   @default("available")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  orders      Order[]
+  orders Order[]
 
   @@map("tables")
 }
 
 model Order {
-  id          String    @id @default(uuid())
-  table_id    String
-  table       Table     @relation(fields: [table_id], references: [id])
-  status      String    @default("draft") 
-  name        String?
-  total       Float?
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  id         String   @id @default(uuid())
+  table_id   String
+  table      Table    @relation(fields: [table_id], references: [id])
+  status     String   @default("draft")
+  name       String?
+  total      Float?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  items       Item[]
-  payments    Payment[]
+  items    Item[]
+  payments Payment[]
 
   @@map("orders")
 }
 
 model Item {
-  id          String    @id @default(uuid())
-  amount      Int
-  created_at  DateTime? @default(now())
-  updated_at  DateTime? @default(now())
+  id         String    @id @default(uuid())
+  amount     Int
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
 
-  order       Order     @relation(fields: [order_id], references: [id])
-  product     Product   @relation(fields: [product_id], references: [id])
+  order      Order   @relation(fields: [order_id], references: [id])
+  product    Product @relation(fields: [product_id], references: [id])
+  order_id   String
+  product_id String
 
   @@map("items")
-  order_id    String
-  product_id  String
 }
 
 model Payment {
-  id             String    @id @default(uuid())
+  id             String   @id @default(uuid())
   order_id       String
-  order          Order     @relation(fields: [order_id], references: [id])
+  order          Order    @relation(fields: [order_id], references: [id])
   amount         Float
   payment_method String
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   @@map("payments")
+}
+
+enum Role {
+  ADMIN
+  USER
 }

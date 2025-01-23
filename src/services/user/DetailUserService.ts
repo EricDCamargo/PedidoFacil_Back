@@ -9,9 +9,13 @@ class DetailUserService {
       select: {
         id: true,
         name: true,
-        email: true
+        email: true,
+        role: true
       }
     })
+    if (!user) {
+      throw { statusCode: 404, message: 'User not found' }
+    }
     return user
   }
 }

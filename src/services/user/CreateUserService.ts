@@ -5,12 +5,16 @@ interface UserRequest {
   name: string
   email: string
   password: string
+  role?: 'ADMIN' | 'USER'
 }
 
 class CreateUserServices {
-  async execute({ name, email, password }: UserRequest) {
-    if (!email) {
-      throw new Error('Email incorrect')
+  async execute({ name, email, password, role }: UserRequest) {
+    if (!email || !password || !name) {
+      throw {
+        statusCode: 400,
+        message: 'Name, email, and password are required'
+      }
     }
 
     const userAlreadyExists = await prismaClient.user.findFirst({
@@ -20,24 +24,29 @@ class CreateUserServices {
     })
 
     if (userAlreadyExists) {
-      throw new Error('User already exists')
+      throw { statusCode: 409, message: 'User already exists' }
     }
 
     const passwordHash = await hash(password, 8)
-
-    const user = await prismaClient.user.create({
-      data: {
-        name: name,
-        email: email,
-        password: passwordHash
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true
-      }
-    })
-    return user
+    try {
+      const user = await prismaClient.user.create({
+        data: {
+          name: name,
+          email: email,
+          password: passwordHash,
+          role: role || 'USER'
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true
+        }
+      })
+      return user
+    } catch (error) {
+      throw { statusCode: 500, message: 'Error creating user' }
+    }
   }
 }
 

@@ -7,11 +7,15 @@ class AuthUserController {
 
     const authUserService = new AuthUserService()
 
-    const auth = await authUserService.execute({
-      email,
-      password
-    })
-    return res.json(auth)
+    try {
+      const auth = await authUserService.execute({
+        email,
+        password
+      })
+      return res.json(auth)
+    } catch (error) {
+      return res.status(401).json({ error: error.message })
+    }
   }
 }
 export { AuthUserController }

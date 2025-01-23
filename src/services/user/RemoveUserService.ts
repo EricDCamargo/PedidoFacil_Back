@@ -7,7 +7,7 @@ interface UserRequest {
 class RemoveUserService {
   async execute({ user_id }: UserRequest) {
     if (!user_id) {
-      throw new Error('User ID is required')
+      throw { statusCode: 400, message: 'User ID is required' }
     }
 
     const userExists = await prismaClient.user.findFirst({
@@ -17,7 +17,7 @@ class RemoveUserService {
     })
 
     if (!userExists) {
-      throw new Error('User not found')
+      throw { statusCode: 404, message: 'User not found' }
     }
 
     await prismaClient.user.delete({

@@ -2,14 +2,26 @@ import { Router } from 'express'
 import multer from 'multer'
 import uploadconfig from './config/multer'
 
+import { isAuthenticated, isAdmin } from './middlewares/isAuthenticated'
+
+// Controllers
 import { CreateUserController } from './controllers/user/CreateUserController'
 import { AuthUserController } from './controllers/user/AuthUserController'
 import { DetailUserController } from './controllers/user/DetailUserController'
-import { isAuthenticated } from './middlewares/isAuthenticated'
+import { RemoveUserController } from './controllers/user/RemoveUserController'
+import { ListUsersController } from './controllers/user/ListUsersController'
+import { UpdateUserController } from './controllers/user/UpdateUserController'
+
 import { CreateCategoryController } from './controllers/category/CreateCategoryController'
 import { ListCategoryController } from './controllers/category/ListCategoryController'
+import { RemoveCategoryController } from './controllers/category/RemoveCategoryController'
+
 import { CreateProductController } from './controllers/product/CreateProductController'
 import { ListByCategoryController } from './controllers/product/ListByCategoryController'
+import { ListProductsController } from './controllers/product/ListProductsController'
+import { RemoveProductController } from './controllers/product/RemoveProductController'
+import { UpdateProductController } from './controllers/product/UpdateProductController'
+
 import { CreateOrderController } from './controllers/order/CreateOrderController'
 import { RemoveOrderController } from './controllers/order/RemoveOrderController'
 import { AddItemController } from './controllers/order/AddItemController'
@@ -18,13 +30,7 @@ import { SendOrderController } from './controllers/order/SendOrderController'
 import { ListOrdersController } from './controllers/order/ListOrdersController'
 import { DetailOrderController } from './controllers/order/DetailOrderController'
 import { FinishOrderController } from './controllers/order/FinishOrderController'
-import { RemoveUserController } from './controllers/user/RemoveUserController'
-import { ListUsersController } from './controllers/user/ListUsersController'
-import { UpdateUserController } from './controllers/user/UpdateUserController'
-import { RemoveCategoryController } from './controllers/category/RemoveCategoryController'
-import { RemoveProductController } from './controllers/product/RemoveProductController'
-import { UpdateProductController } from './controllers/product/UpdateProductController'
-import { ListProductsController } from './controllers/product/ListProductsController'
+
 import { CreateTableController } from './controllers/table/CreateTableController'
 import { ListTablesController } from './controllers/table/ListTablesController'
 import { UpdateTableStatusController } from './controllers/table/UpdateTableStatusController'
@@ -39,27 +45,27 @@ const upload = multer(uploadconfig.upload('./tmp'))
 router.post('/users', new CreateUserController().handle)
 router.post('/session', new AuthUserController().handle)
 router.get('/me', isAuthenticated, new DetailUserController().handle)
-router.delete('/users', isAuthenticated, new RemoveUserController().handle)
+router.delete('/users', isAuthenticated, isAdmin, new RemoveUserController().handle)
 router.get('/users', isAuthenticated, new ListUsersController().handle)
-router.put('/users', isAuthenticated, new UpdateUserController().handle)
+router.put('/users', isAuthenticated, isAdmin, new UpdateUserController().handle)
 
 // -- Category Routes --
-router.post('/category', isAuthenticated, new CreateCategoryController().handle)
+router.post('/category', isAuthenticated, isAdmin, new CreateCategoryController().handle)
 router.get('/category', isAuthenticated, new ListCategoryController().handle)
-router.delete('/category', isAuthenticated, new RemoveCategoryController().handle)
+router.delete('/category', isAuthenticated, isAdmin, new RemoveCategoryController().handle)
 
 // -- Product Routes --
-router.post('/product', isAuthenticated, upload.single('file'), new CreateProductController().handle)
+router.post('/product', isAuthenticated, isAdmin, upload.single('file'), new CreateProductController().handle)
 router.get('/category/product', isAuthenticated, new ListByCategoryController().handle)
 router.get('/products', isAuthenticated, new ListProductsController().handle)
-router.delete('/product', isAuthenticated, new RemoveProductController().handle)
-router.put('/product', isAuthenticated, upload.single('file'), new UpdateProductController().handle)
+router.delete('/product', isAuthenticated, isAdmin, new RemoveProductController().handle)
+router.put('/product', isAuthenticated, isAdmin, upload.single('file'), new UpdateProductController().handle)
 
 // -- Order Routes --
 router.post('/order', isAuthenticated, new CreateOrderController().handle)
 router.delete('/order', isAuthenticated, new RemoveOrderController().handle)
 router.post('/order/add', isAuthenticated, new AddItemController().handle)
-router.delete('/order/remove', isAuthenticated, new RemoveItemController().handle)
+router.delete('/order/remove', isAuthenticated, isAdmin, new RemoveItemController().handle)
 router.put('/order/send', isAuthenticated, new SendOrderController().handle)
 router.get('/orders', isAuthenticated, new ListOrdersController().handle)
 router.get('/order/detail', isAuthenticated, new DetailOrderController().handle)

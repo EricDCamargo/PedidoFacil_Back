@@ -16,17 +16,17 @@ class AuthUserService {
     })
 
     if (!user) {
-      throw new Error('User/password not incorrect')
+      throw new Error('Invalid credentials')
     }
 
     const passwordMatch = await compare(password, user.password)
 
     if (!passwordMatch) {
-      throw new Error('User/password not incorrect')
+      throw new Error('User/password not correct')
     }
 
     const token = sign(
-      { name: user.name, email: user.email },
+      { name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       {
         subject: user.id,
@@ -34,7 +34,13 @@ class AuthUserService {
       }
     )
 
-    return { id: user.id, name: user.name, email: user.email, token: token }
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: token
+    }
   }
 }
 export { AuthUserService }
