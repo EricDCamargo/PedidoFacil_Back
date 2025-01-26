@@ -1,25 +1,28 @@
-import { Request, Response, response } from 'express'
-import { CreateUserServices } from '../../services/user/CreateUserService'
+import { Request, Response } from 'express'
+import { CreateUserService } from '../../services/user/CreateUserService'
+import { AppError } from '../../errors/AppError'
+import { StatusCodes } from 'http-status-codes'
 
 class CreateUserController {
   async handle(req: Request, res: Response) {
     const { name, email, password, role } = req.body
-
-    const createUserServices = new CreateUserServices()
+    const createUserService = new CreateUserService()
 
     try {
-      const user = await createUserServices.execute({
+      const user = await createUserService.execute({
         name,
         email,
         password,
         role
       })
-      return res.status(201).json(user)
-    } catch (err) {
-      if (err.statusCode && err.message) {
-        return res.status(err.statusCode).json({ error: err.message })
+      return res.status(StatusCodes.CREATED).json(user)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
       }
-      return res.status(500).json({ error: 'Internal Server Error' })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }
