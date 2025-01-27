@@ -7,7 +7,7 @@ interface SendOrderRequest {
 
 class SendOrderService {
   async execute({ order_id }: SendOrderRequest) {
-    const { draft, in_progress } = OrderStatus
+    const { DRAFT, IN_PROGRESS } = OrderStatus
     const order = await prismaClient.order.findUnique({
       where: { id: order_id }
     })
@@ -16,13 +16,13 @@ class SendOrderService {
       throw new Error('Pedido não encontrado.')
     }
 
-    if (order.status !== draft) {
+    if (order.status !== DRAFT) {
       throw new Error('Pedido já encaminhado para a cozinha.')
     }
 
     const updatedOrder = await prismaClient.order.update({
       where: { id: order_id },
-      data: { status: in_progress }
+      data: { status: IN_PROGRESS }
     })
 
     return updatedOrder

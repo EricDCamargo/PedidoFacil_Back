@@ -8,10 +8,10 @@ interface ListOrdersRequest {
 
 class ListOrdersService {
   async execute({ table_id }: ListOrdersRequest) {
-    const { draft, in_progress, completed } = OrderStatus
+    const { DRAFT, IN_PROGRESS, COMPLETED } = OrderStatus
     const filter: Prisma.OrderWhereInput = {
       status: {
-        in: [draft, in_progress, completed]
+        in: [DRAFT, IN_PROGRESS, COMPLETED]
       }
     }
 

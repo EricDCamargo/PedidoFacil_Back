@@ -8,8 +8,8 @@ interface CloseTableRequest {
 
 class CloseTableService {
   async execute({ table_id, payment_method }: CloseTableRequest) {
-    const { available, occupied } = TableStatus
-    const { completed, closed } = OrderStatus
+    const { AVAILABLE, OCCUPIED } = TableStatus
+    const { COMPLETED, CLOSED } = OrderStatus
     const table = await prismaClient.table.findUnique({
       where: { id: table_id }
     })
@@ -18,7 +18,7 @@ class CloseTableService {
       throw new Error('Mesa não encontrada.')
     }
 
-    if (table.status !== occupied) {
+    if (table.status !== OCCUPIED) {
       throw new Error('A mesa não está ocupada.')
     }
 
@@ -27,7 +27,7 @@ class CloseTableService {
     }
 
     const orders = await prismaClient.order.findMany({
-      where: { table_id, status: completed }
+      where: { table_id, status: COMPLETED }
     })
 
     if (orders.length === 0) {
@@ -48,13 +48,13 @@ class CloseTableService {
     })
 
     await prismaClient.order.updateMany({
-      where: { table_id, status: completed },
-      data: { status: closed }
+      where: { table_id, status: COMPLETED },
+      data: { status: CLOSED }
     })
 
     await prismaClient.table.update({
       where: { id: table_id },
-      data: { status: available }
+      data: { status: AVAILABLE }
     })
 
     return { message: 'Conta fechada com sucesso' }

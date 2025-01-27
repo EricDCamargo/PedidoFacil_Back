@@ -7,7 +7,7 @@ interface OrderRequest {
 
 class RemoveOrderService {
   async execute({ order_id }: OrderRequest) {
-    const { completed } = OrderStatus
+    const { COMPLETED } = OrderStatus
     const order = await prismaClient.order.findUnique({
       where: { id: order_id }
     })
@@ -16,7 +16,7 @@ class RemoveOrderService {
       throw new Error('Pedido não encontrado.')
     }
 
-    if (order.status == completed) {
+    if (order.status == COMPLETED) {
       throw new Error('O pedido não pode ser removido pois já foi entregue".')
     }
 

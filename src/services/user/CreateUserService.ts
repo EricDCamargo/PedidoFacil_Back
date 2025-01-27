@@ -8,7 +8,7 @@ interface UserRequest {
   name: string
   email: string
   password: string
-  role?: Role.admin | Role.user
+  role?: Role.ADMIN | Role.USER
 }
 
 class CreateUserService {
@@ -36,7 +36,7 @@ class CreateUserService {
           name,
           email,
           password: passwordHash,
-          role: role || Role.user
+          role: role || Role.USER
         },
         select: {
           id: true,

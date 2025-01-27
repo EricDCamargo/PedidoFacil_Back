@@ -1,18 +1,19 @@
 enum OrderStatus {
-  draft = 'draft',
-  in_progress = 'in_progress',
-  completed = 'completed',
-  closed = 'closed'
+  DRAFT = 'DRAFT',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CLOSED = 'CLOSED'
 }
 
 enum TableStatus {
-  available = 'available',
-  occupied = 'occupied',
-  reserved = 'reserved'
+  AVAILABLE = 'AVAILABLE',
+  OCCUPIED = 'OCCUPIED',
+  RESERVED = 'RESERVED'
 }
+
 enum Role {
-  admin = 'ADMIN',
-  user = 'USER'
+  ADMIN = 'ADMIN',
+  USER = 'USER'
 }
 
 export { OrderStatus, TableStatus, Role }

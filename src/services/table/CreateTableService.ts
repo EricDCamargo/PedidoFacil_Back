@@ -2,12 +2,12 @@ import { TableStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
 
 interface TableRequest {
-  number: number
+  number: string
 }
 
 class CreateTableService {
   async execute({ number }: TableRequest) {
-    const { available } = TableStatus
+    const { AVAILABLE } = TableStatus
 
     const tableExists = await prismaClient.table.findUnique({
       where: { number }
@@ -20,7 +20,7 @@ class CreateTableService {
     const table = await prismaClient.table.create({
       data: {
         number,
-        status: available
+        status: AVAILABLE
       }
     })
 
