@@ -32,7 +32,7 @@ export function isAuthenticated(
   }
 } // Verify access level
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
-  if (req.user_role !== Role.admin) {
+  if (req.user_role !== Role.ADMIN) {
     return res.status(403).json({ error: 'Permission denied' })
   }
 
