@@ -1,4 +1,7 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
 import { Role } from '../../@types/types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface UpdateUserRequest {
@@ -9,19 +12,24 @@ interface UpdateUserRequest {
 }
 
 class UpdateUserService {
-  async execute({ user_id, name, email, role }: UpdateUserRequest) {
+  async execute({
+    user_id,
+    name,
+    email,
+    role
+  }: UpdateUserRequest): Promise<AppResponse> {
     const user = await prismaClient.user.findFirst({
       where: { id: user_id }
     })
     if (!email) {
-      throw {
-        statusCode: 400,
-        message: 'Please enter a valid name and email address'
-      }
+      throw new AppError(
+        'Informar um email e nome validos!',
+        StatusCodes.BAD_REQUEST
+      )
     }
 
     if (!user) {
-      throw { statusCode: 404, message: 'User not found' }
+      throw new AppError('Usuario não encontrado!', StatusCodes.NOT_FOUND)
     }
 
     const updatedUser = await prismaClient.user.update({
@@ -39,7 +47,7 @@ class UpdateUserService {
       }
     })
 
-    return updatedUser
+    return { data: updatedUser, message: 'Usuario editado com sucesso!' }
   }
 }
 

@@ -62,6 +62,7 @@ model Table {
 
 model Order {
   id         String   @id @default(uuid())
+  number     Int      @default(autoincrement())
   table_id   String
   table      Table    @relation(fields: [table_id], references: [id])
   status     String   @default("DRAFT")

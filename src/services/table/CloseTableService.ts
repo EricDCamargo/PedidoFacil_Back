@@ -1,4 +1,7 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
 import { OrderStatus, TableStatus } from '../../@types/types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface CloseTableRequest {
@@ -7,7 +10,10 @@ interface CloseTableRequest {
 }
 
 class CloseTableService {
-  async execute({ table_id, payment_method }: CloseTableRequest) {
+  async execute({
+    table_id,
+    payment_method
+  }: CloseTableRequest): Promise<AppResponse> {
     const { AVAILABLE, OCCUPIED } = TableStatus
     const { COMPLETED, CLOSED } = OrderStatus
     const table = await prismaClient.table.findUnique({
@@ -15,15 +21,18 @@ class CloseTableService {
     })
 
     if (!table) {
-      throw new Error('Mesa não encontrada.')
+      throw new AppError('Mesa não encontrada!', StatusCodes.NOT_FOUND)
     }
 
     if (table.status !== OCCUPIED) {
-      throw new Error('A mesa não está ocupada.')
+      throw new AppError('A mesa não está ocupada!', StatusCodes.BAD_REQUEST)
     }
 
     if (!payment_method) {
-      throw new Error('Forma de pagamento não informada.')
+      throw new AppError(
+        'Forma de pagamento não informada!',
+        StatusCodes.BAD_REQUEST
+      )
     }
 
     const orders = await prismaClient.order.findMany({
@@ -31,7 +40,7 @@ class CloseTableService {
     })
 
     if (orders.length === 0) {
-      throw new Error('Não há pedidos para fechar.')
+      throw new AppError('Não há pedidos para fechar!', StatusCodes.BAD_REQUEST)
     }
 
     const totalAmount = orders.reduce(
@@ -57,7 +66,7 @@ class CloseTableService {
       data: { status: AVAILABLE }
     })
 
-    return { message: 'Conta fechada com sucesso' }
+    return { data: undefined, message: 'Conta fechada com sucesso!' }
   }
 }
 

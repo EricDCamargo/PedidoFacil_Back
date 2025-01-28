@@ -1,3 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface UserRequest {
@@ -5,9 +8,12 @@ interface UserRequest {
 }
 
 class RemoveUserService {
-  async execute({ user_id }: UserRequest) {
+  async execute({ user_id }: UserRequest): Promise<AppResponse> {
     if (!user_id) {
-      throw { statusCode: 400, message: 'User ID is required' }
+      throw new AppError(
+        'Necessario informar ID do usuario!',
+        StatusCodes.BAD_REQUEST
+      )
     }
 
     const userExists = await prismaClient.user.findFirst({
@@ -17,7 +23,7 @@ class RemoveUserService {
     })
 
     if (!userExists) {
-      throw { statusCode: 404, message: 'User not found' }
+      throw new AppError('Usuario não foi encontrado!', StatusCodes.NOT_FOUND)
     }
 
     await prismaClient.user.delete({
@@ -26,7 +32,7 @@ class RemoveUserService {
       }
     })
 
-    return { message: 'User successfully removed' }
+    return { data: undefined, message: 'Usuario removido com sucesso!' }
   }
 }
 

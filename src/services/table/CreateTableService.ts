@@ -1,30 +1,46 @@
+import { StatusCodes } from 'http-status-codes'
 import { TableStatus } from '../../@types/types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
+import { AppResponse } from '../../@types/app.types'
 
 interface TableRequest {
   number: string
 }
 
 class CreateTableService {
-  async execute({ number }: TableRequest) {
+  async execute({ number }: TableRequest): Promise<AppResponse> {
     const { AVAILABLE } = TableStatus
+
+    if (!number) {
+      throw new AppError(
+        'Necessario informar numero da mesa!',
+        StatusCodes.BAD_REQUEST
+      )
+    }
 
     const tableExists = await prismaClient.table.findUnique({
       where: { number }
     })
 
     if (tableExists) {
-      throw new Error('Mesa já cadastrada.')
+      throw new AppError('Mesa ja existe!', StatusCodes.CONFLICT)
     }
+    try {
+      const table = await prismaClient.table.create({
+        data: {
+          number,
+          status: AVAILABLE
+        }
+      })
 
-    const table = await prismaClient.table.create({
-      data: {
-        number,
-        status: AVAILABLE
-      }
-    })
-
-    return table
+      return { data: table, message: 'Mesa criada com sucesso!' }
+    } catch (error) {
+      throw new AppError(
+        'Erro ao criar mesa!',
+        StatusCodes.INTERNAL_SERVER_ERROR
+      )
+    }
   }
 }
 

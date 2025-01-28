@@ -1,14 +1,15 @@
+import { AppResponse } from '../../@types/app.types'
 import prismaClient from '../../prisma'
 
 class ListTablesService {
-  async execute() {
+  async execute(): Promise<AppResponse> {
     const tables = await prismaClient.table.findMany({
       orderBy: {
         number: 'asc'
       }
     })
 
-    return tables
+    return { data: tables, message: 'Lista de messas!' }
   }
 }
 

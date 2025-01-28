@@ -1,13 +1,14 @@
 import { Prisma } from '@prisma/client'
 import prismaClient from '../../prisma'
 import { OrderStatus } from '../../@types/types'
+import { AppResponse } from '../../@types/app.types'
 
 interface ListOrdersRequest {
   table_id: string
 }
 
 class ListOrdersService {
-  async execute({ table_id }: ListOrdersRequest) {
+  async execute({ table_id }: ListOrdersRequest): Promise<AppResponse> {
     const { DRAFT, IN_PROGRESS, COMPLETED } = OrderStatus
     const filter: Prisma.OrderWhereInput = {
       status: {
@@ -35,7 +36,7 @@ class ListOrdersService {
       }
     })
 
-    return orders
+    return { data: orders, message: 'Lista de messas' }
   }
 }
 

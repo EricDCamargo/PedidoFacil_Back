@@ -1,19 +1,15 @@
 import { Request, Response } from 'express'
-import { CloseTableService } from '../../services/table/CloseTableService'
+import { DeleteTableService } from '../../services/table/DeleteTableService'
 import { StatusCodes } from 'http-status-codes'
 import { AppError } from '../../errors/AppError'
 
-class CloseTableController {
+class DeleteTableController {
   async handle(req: Request, res: Response) {
-    const { table_id, payment_method } = req.body
-
-    const closeTableService = new CloseTableService()
+    const table_id = req.query.table_id as string
+    const deleteTableService = new DeleteTableService()
 
     try {
-      const result = await closeTableService.execute({
-        table_id,
-        payment_method
-      })
+      const result = await deleteTableService.execute({ table_id })
       return res.status(StatusCodes.OK).json(result)
     } catch (error) {
       if (error instanceof AppError) {
@@ -26,4 +22,4 @@ class CloseTableController {
   }
 }
 
-export { CloseTableController }
+export { DeleteTableController }

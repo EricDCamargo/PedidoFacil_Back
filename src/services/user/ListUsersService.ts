@@ -1,7 +1,8 @@
+import { AppResponse } from '../../@types/app.types'
 import prismaClient from '../../prisma'
 
 class ListUsersService {
-  async execute() {
+  async execute(): Promise<AppResponse> {
     const users = await prismaClient.user.findMany({
       select: {
         id: true,
@@ -13,7 +14,7 @@ class ListUsersService {
       }
     })
 
-    return users
+    return { data: users, message: 'Lista de usuarios' }
   }
 }
 

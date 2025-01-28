@@ -1,6 +1,7 @@
 import prismaClient from '../../prisma'
 import { compare } from 'bcryptjs'
 import { sign } from 'jsonwebtoken'
+import { AppResponse } from '../../@types/app.types'
 
 interface AuthRequest {
   email: string
@@ -8,7 +9,7 @@ interface AuthRequest {
 }
 
 class AuthUserService {
-  async execute({ email, password }: AuthRequest) {
+  async execute({ email, password }: AuthRequest): Promise<AppResponse> {
     const user = await prismaClient.user.findFirst({
       where: {
         email: email
@@ -16,13 +17,13 @@ class AuthUserService {
     })
 
     if (!user) {
-      throw new Error('Invalid credentials')
+      throw new Error('Usuario não encontrado, credenciais incoretas!')
     }
 
     const passwordMatch = await compare(password, user.password)
 
     if (!passwordMatch) {
-      throw new Error('User/password not correct')
+      throw new Error('Senha incoreta!')
     }
 
     const token = sign(
@@ -35,11 +36,14 @@ class AuthUserService {
     )
 
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: token
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: token
+      },
+      message: 'Login feito com sucesso!'
     }
   }
 }

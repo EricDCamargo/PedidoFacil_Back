@@ -1,3 +1,4 @@
+import { AppResponse } from '../../@types/app.types'
 import prismaClient from '../../prisma'
 
 interface GetTableDetailsRequest {
@@ -5,7 +6,7 @@ interface GetTableDetailsRequest {
 }
 
 class GetTableDetailsService {
-  async execute({ table_id }: GetTableDetailsRequest) {
+  async execute({ table_id }: GetTableDetailsRequest): Promise<AppResponse> {
     const table = await prismaClient.table.findUnique({
       where: { id: table_id },
       include: {
@@ -14,10 +15,10 @@ class GetTableDetailsService {
     })
 
     if (!table) {
-      throw new Error('Mesa não encontrada.')
+      throw new Error('Mesa não encontrada!')
     }
 
-    return table
+    return { data: table, message: 'Mesa ativa!' }
   }
 }
 

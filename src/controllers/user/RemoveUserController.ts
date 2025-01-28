@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import { RemoveUserService } from '../../services/user/RemoveUserService'
+import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 
 class RemoveUserController {
   async handle(req: Request, res: Response) {
@@ -9,12 +11,14 @@ class RemoveUserController {
 
     try {
       const result = await removeUser.execute({ user_id })
-      return res.status(200).json(result)
-    } catch (err) {
-      if (err.statusCode && err.message) {
-        return res.status(err.statusCode).json({ error: err.message })
+      return res.status(StatusCodes.OK).json(result)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
       }
-      return res.status(500).json({ error: 'Internal server error' })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

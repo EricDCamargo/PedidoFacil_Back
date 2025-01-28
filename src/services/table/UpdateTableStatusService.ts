@@ -1,3 +1,4 @@
+import { AppResponse } from '../../@types/app.types'
 import prismaClient from '../../prisma'
 
 interface UpdateTableStatusRequest {
@@ -6,7 +7,10 @@ interface UpdateTableStatusRequest {
 }
 
 class UpdateTableStatusService {
-  async execute({ table_id, status }: UpdateTableStatusRequest) {
+  async execute({
+    table_id,
+    status
+  }: UpdateTableStatusRequest): Promise<AppResponse> {
     const table = await prismaClient.table.findUnique({
       where: { id: table_id }
     })
@@ -20,7 +24,7 @@ class UpdateTableStatusService {
       data: { status }
     })
 
-    return updatedTable
+    return { data: updatedTable, message: 'Mesa editada com sucesso!' }
   }
 }
 

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { AuthUserService } from '../../services/user/AuthUserService'
+import { StatusCodes } from 'http-status-codes'
 
 class AuthUserController {
   async handle(req: Request, res: Response) {
@@ -14,7 +15,7 @@ class AuthUserController {
       })
       return res.json(auth)
     } catch (error) {
-      return res.status(401).json({ error: error.message })
+      return res.status(StatusCodes.UNAUTHORIZED).json({ error: error.message })
     }
   }
 }

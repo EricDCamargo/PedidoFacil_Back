@@ -36,6 +36,8 @@ import { ListTablesController } from './controllers/table/ListTablesController'
 import { UpdateTableStatusController } from './controllers/table/UpdateTableStatusController'
 import { GetTableDetailsController } from './controllers/table/GetTableDetailsController'
 import { CloseTableController } from './controllers/table/CloseTableController'
+import { DeleteTableService } from './services/table/DeleteTableService'
+import { DeleteTableController } from './controllers/table/DeleteTableController'
 
 const router = Router()
 
@@ -77,5 +79,6 @@ router.get('/tables', isAuthenticated, new ListTablesController().handle)
 router.put('/table/status', isAuthenticated, new UpdateTableStatusController().handle)
 router.get('/table/detail', isAuthenticated, new GetTableDetailsController().handle)
 router.put('/table/close', isAuthenticated, new CloseTableController().handle)
+router.delete('/table', isAuthenticated, isAdmin, new DeleteTableController().handle)
 
 export { router }

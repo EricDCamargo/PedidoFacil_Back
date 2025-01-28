@@ -3,6 +3,7 @@ import { hash } from 'bcryptjs'
 import { AppError } from '../../errors/AppError'
 import { StatusCodes } from 'http-status-codes'
 import { Role } from '../../@types/types'
+import { AppResponse } from '../../@types/app.types'
 
 interface UserRequest {
   name: string
@@ -12,10 +13,15 @@ interface UserRequest {
 }
 
 class CreateUserService {
-  async execute({ name, email, password, role }: UserRequest) {
+  async execute({
+    name,
+    email,
+    password,
+    role
+  }: UserRequest): Promise<AppResponse> {
     if (!email || !password || !name) {
       throw new AppError(
-        'Name, email, and password are required',
+        'Nome email e senha são necessarios!',
         StatusCodes.BAD_REQUEST
       )
     }
@@ -25,7 +31,10 @@ class CreateUserService {
     })
 
     if (userAlreadyExists) {
-      throw new AppError('User already exists', StatusCodes.CONFLICT)
+      throw new AppError(
+        'Email já cadastrado em outro usuario!',
+        StatusCodes.CONFLICT
+      )
     }
 
     const passwordHash = await hash(password, 8)
@@ -46,10 +55,10 @@ class CreateUserService {
         }
       })
 
-      return user
+      return { data: user, message: 'Usuario criado com sucesso!' }
     } catch (error) {
       throw new AppError(
-        'Error creating user',
+        'Erro ao criar usuario!',
         StatusCodes.INTERNAL_SERVER_ERROR
       )
     }
