@@ -1,3 +1,4 @@
+import { AppResponse } from '../../@types/app.types'
 import prismaClient from '../../prisma'
 
 interface ProductRequest {
@@ -15,7 +16,7 @@ class CreateProductService {
     description,
     banner,
     category_id
-  }: ProductRequest) {
+  }: ProductRequest): Promise<AppResponse> {
     const product = await prismaClient.product.create({
       data: {
         name,
@@ -25,7 +26,7 @@ class CreateProductService {
         category_id
       }
     })
-    return product
+    return { data: product, message: 'Produto cadastrado com sucesso!' }
   }
 }
 

@@ -1,3 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface UpdateProductRequest {
@@ -10,13 +13,26 @@ interface UpdateProductRequest {
 }
 
 class UpdateProductService {
-  async execute({ product_id, name, price, description, banner, category_id }: UpdateProductRequest) {
+  async execute({
+    product_id,
+    name,
+    price,
+    description,
+    banner,
+    category_id
+  }: UpdateProductRequest): Promise<AppResponse> {
+    if (!product_id) {
+      throw new AppError(
+        'Necessario informar ID do produto!',
+        StatusCodes.BAD_REQUEST
+      )
+    }
     const productExists = await prismaClient.product.findFirst({
-      where: { id: product_id },
+      where: { id: product_id }
     })
 
     if (!productExists) {
-      throw new Error('Product not found')
+      throw new AppError('Produto não encontrado!', StatusCodes.NOT_FOUND)
     }
 
     const updatedProduct = await prismaClient.product.update({
@@ -27,11 +43,11 @@ class UpdateProductService {
         description,
         banner,
         category_id,
-        updated_at: new Date(),
-      },
+        updated_at: new Date()
+      }
     })
 
-    return updatedProduct
+    return { data: updatedProduct, message: 'Produto criado com sucesso!' }
   }
 }
 

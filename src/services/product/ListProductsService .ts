@@ -1,7 +1,10 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 class ListProductsService {
-  async execute() {
+  async execute(): Promise<AppResponse> {
     const products = await prismaClient.product.findMany({
       include: {
         category: true
@@ -10,8 +13,11 @@ class ListProductsService {
         created_at: 'desc'
       }
     })
+    if (!products) {
+      throw new AppError('Nenhum produto encontrado!', StatusCodes.NOT_FOUND)
+    }
 
-    return products
+    return { data: products, message: 'Lista de produtos!' }
   }
 }
 

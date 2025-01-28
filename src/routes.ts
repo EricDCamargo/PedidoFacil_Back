@@ -40,7 +40,8 @@ import { DeleteTableController } from './controllers/table/DeleteTableController
 
 const router = Router()
 
-const upload = multer(uploadconfig.upload('./tmp'))
+// upload products using multer
+//const upload = multer(uploadconfig.upload('./tmp'))
 
 // -- User Routes --
 router.post('/users', new CreateUserController().handle)
@@ -56,11 +57,16 @@ router.get('/category', isAuthenticated, new ListCategoryController().handle)
 router.delete('/category', isAuthenticated, isAdmin, new RemoveCategoryController().handle)
 
 // -- Product Routes --
-router.post('/product', isAuthenticated, isAdmin, upload.single('file'), new CreateProductController().handle)
+
+// upload products using multer
+// router.post('/product', isAuthenticated, isAdmin, upload.single('file'), new CreateProductController().handle)
+// router.put('/product', isAuthenticated, isAdmin, upload.single('file'), new UpdateProductController().handle)
+
+router.post('/product', isAuthenticated, isAdmin, new CreateProductController().handle)
+router.put('/product', isAuthenticated, isAdmin, new UpdateProductController().handle)
 router.get('/category/product', isAuthenticated, new ListByCategoryController().handle)
 router.get('/products', isAuthenticated, new ListProductsController().handle)
 router.delete('/product', isAuthenticated, isAdmin, new RemoveProductController().handle)
-router.put('/product', isAuthenticated, isAdmin, upload.single('file'), new UpdateProductController().handle)
 
 // -- Order Routes --
 router.post('/order', isAuthenticated, new CreateOrderController().handle)
