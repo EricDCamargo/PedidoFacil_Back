@@ -36,7 +36,6 @@ import { ListTablesController } from './controllers/table/ListTablesController'
 import { UpdateTableStatusController } from './controllers/table/UpdateTableStatusController'
 import { GetTableDetailsController } from './controllers/table/GetTableDetailsController'
 import { CloseTableController } from './controllers/table/CloseTableController'
-import { DeleteTableService } from './services/table/DeleteTableService'
 import { DeleteTableController } from './controllers/table/DeleteTableController'
 
 const router = Router()

@@ -1,6 +1,7 @@
 import { Request, NextFunction, Response } from 'express'
 import { verify } from 'jsonwebtoken'
 import { Role } from '../@types/types'
+import { StatusCodes } from 'http-status-codes'
 
 interface Payload {
   sub: string
@@ -15,7 +16,10 @@ export function isAuthenticated(
   const authToken = req.headers.authorization
 
   if (!authToken) {
-    return res.status(401).json({ error: 'Token is missing' }).end()
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: 'Token não encontrado!' })
+      .end()
   }
 
   const [, token] = authToken.split(' ')
@@ -28,12 +32,15 @@ export function isAuthenticated(
 
     return next()
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' }).end()
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ error: 'Token invalido ou expirado!' })
+      .end()
   }
 } // Verify access level
 export function isAdmin(req: Request, res: Response, next: NextFunction) {
   if (req.user_role !== Role.ADMIN) {
-    return res.status(403).json({ error: 'Permission denied' })
+    return res.status(403).json({ error: 'Permisão negada!' })
   }
 
   return next()

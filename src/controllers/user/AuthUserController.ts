@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { AuthUserService } from '../../services/user/AuthUserService'
 import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 
 class AuthUserController {
   async handle(req: Request, res: Response) {
@@ -13,9 +14,15 @@ class AuthUserController {
         email,
         password
       })
-      return res.json(auth)
+      return res.status(StatusCodes.OK).json(auth)
     } catch (error) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ error: error.message })
+      console.error('Erro ao autenticar:', error)
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

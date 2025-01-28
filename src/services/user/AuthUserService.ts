@@ -2,6 +2,8 @@ import prismaClient from '../../prisma'
 import { compare } from 'bcryptjs'
 import { sign } from 'jsonwebtoken'
 import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
+import { StatusCodes } from 'http-status-codes'
 
 interface AuthRequest {
   email: string
@@ -17,13 +19,16 @@ class AuthUserService {
     })
 
     if (!user) {
-      throw new Error('Usuario não encontrado, credenciais incoretas!')
+      throw new AppError(
+        'Usuario não encontrado, credenciais incoretas!',
+        StatusCodes.BAD_REQUEST
+      )
     }
 
     const passwordMatch = await compare(password, user.password)
 
     if (!passwordMatch) {
-      throw new Error('Senha incoreta!')
+      throw new AppError('Senha incoreta!', StatusCodes.BAD_REQUEST)
     }
 
     const token = sign(
