@@ -17,10 +17,12 @@ class UpdateProductController {
     const { name, price, description, category_id } = request.body
 
     const updateProductService = new UpdateProductService()
+    let banner: string | undefined
 
-    if (!request.files || Object.keys(request.files).length === 0) {
-      throw new Error('Erro ao fazer o uoload da imagem!')
-    } else {
+    if (
+      request.files ||
+      (request.files && Object.keys(request.files).length > 0)
+    ) {
       const file: UploadedFile = request.files['file'] as UploadedFile
 
       const resultFile: UploadApiResponse = await new Promise(
@@ -36,28 +38,27 @@ class UpdateProductController {
             .end(file.data)
         }
       )
+      banner = resultFile.url
+    }
 
-      try {
-        const updatedProduct = await updateProductService.execute({
-          product_id,
-          name,
-          price,
-          description,
-          banner: resultFile.url,
-          category_id
-        })
+    try {
+      const updatedProduct = await updateProductService.execute({
+        product_id,
+        name,
+        price: parseFloat(price),
+        description,
+        banner: banner,
+        category_id
+      })
 
-        return response.status(StatusCodes.OK).json(updatedProduct)
-      } catch (error) {
-        if (error instanceof AppError) {
-          return response
-            .status(error.statusCode)
-            .json({ error: error.message })
-        }
-        return response
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .json({ error: 'Internal Server Error' })
+      return response.status(StatusCodes.OK).json(updatedProduct)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return response.status(error.statusCode).json({ error: error.message })
       }
+      return response
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

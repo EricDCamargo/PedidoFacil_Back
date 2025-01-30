@@ -40,7 +40,7 @@ class CreateProductController {
       try {
         const product = await createProductService.execute({
           name,
-          price,
+          price: parseFloat(price),
           description,
           banner: resultFile.url,
           category_id

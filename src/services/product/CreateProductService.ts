@@ -1,4 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
 import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface ProductRequest {
@@ -17,6 +19,19 @@ class CreateProductService {
     banner,
     category_id
   }: ProductRequest): Promise<AppResponse> {
+    if (!name || !price || !description || !banner || !category_id) {
+      throw new AppError(
+        'Todos os campos são obrigatórios!',
+        StatusCodes.BAD_REQUEST
+      )
+    }
+    if (typeof price !== 'number') {
+      throw new AppError(
+        'Price must be provided as a number',
+        StatusCodes.BAD_REQUEST
+      )
+    }
+
     const product = await prismaClient.product.create({
       data: {
         name,

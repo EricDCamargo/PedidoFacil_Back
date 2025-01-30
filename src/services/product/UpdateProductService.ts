@@ -34,6 +34,12 @@ class UpdateProductService {
     if (!productExists) {
       throw new AppError('Produto não encontrado!', StatusCodes.NOT_FOUND)
     }
+    if (typeof price !== 'number') {
+      throw new AppError(
+        'Price must be provided as a number',
+        StatusCodes.BAD_REQUEST
+      )
+    }
 
     const updatedProduct = await prismaClient.product.update({
       where: { id: product_id },
@@ -47,7 +53,7 @@ class UpdateProductService {
       }
     })
 
-    return { data: updatedProduct, message: 'Produto criado com sucesso!' }
+    return { data: updatedProduct, message: 'Produto editado com sucesso!' }
   }
 }
 
