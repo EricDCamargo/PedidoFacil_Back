@@ -10,9 +10,11 @@ class RemoveProductController {
     const removeProductService = new RemoveProductService()
 
     try {
+      console.log(product_id)
       const result = await removeProductService.execute(product_id)
       return res.status(StatusCodes.OK).json(result)
     } catch (error) {
+      console.log(error)
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({ error: error.message })
       }

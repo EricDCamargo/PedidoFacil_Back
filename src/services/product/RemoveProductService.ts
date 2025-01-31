@@ -19,6 +19,10 @@ class RemoveProductService {
       throw new AppError('Produto não encontrado', StatusCodes.NOT_FOUND)
     }
 
+    await prismaClient.item.deleteMany({
+      where: { product_id: product_id }
+    })
+
     await prismaClient.product.delete({
       where: { id: product_id }
     })
