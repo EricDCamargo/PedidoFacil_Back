@@ -43,7 +43,7 @@ class CloseTableService {
       throw new AppError('Não há pedidos para fechar!', StatusCodes.BAD_REQUEST)
     }
 
-    const totalAmount = orders.reduce(
+    const totalValue = orders.reduce(
       (total, order) => total + (order.total || 0),
       0
     )
@@ -51,7 +51,7 @@ class CloseTableService {
     await prismaClient.payment.create({
       data: {
         order_id: orders[0].id,
-        amount: totalAmount,
+        value: totalValue,
         payment_method
       }
     })

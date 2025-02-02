@@ -9,13 +9,12 @@ interface ListOrdersRequest {
 
 class ListOrdersService {
   async execute({ table_id }: ListOrdersRequest): Promise<AppResponse> {
-    const { DRAFT, IN_PROGRESS, COMPLETED } = OrderStatus
+    const { DRAFT, IN_PROGRESS, COMPLETED, PAID } = OrderStatus
     const filter: Prisma.OrderWhereInput = {
       status: {
-        in: [DRAFT, IN_PROGRESS, COMPLETED]
+        in: [DRAFT, IN_PROGRESS, COMPLETED, PAID]
       }
     }
-
     if (table_id) {
       filter.table_id = table_id
     }
@@ -28,15 +27,23 @@ class ListOrdersService {
       include: {
         items: {
           include: {
-            product: true
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                description: true,
+                banner: true,
+                category: true
+              }
+            }
           }
         },
-        table: true,
         payments: true
       }
     })
 
-    return { data: orders, message: 'Lista de messas' }
+    return { data: orders, message: 'Lista de pedidos por mesa' }
   }
 }
 

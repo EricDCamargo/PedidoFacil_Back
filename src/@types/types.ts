@@ -2,6 +2,7 @@ enum OrderStatus {
   DRAFT = 'DRAFT',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
+  PAID = 'PAID',
   CLOSED = 'CLOSED'
 }
 
