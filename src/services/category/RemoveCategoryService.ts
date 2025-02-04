@@ -1,3 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface CategoryRequest {
@@ -5,20 +8,26 @@ interface CategoryRequest {
 }
 
 class RemoveCategoryService {
-  async execute({ category_id }: CategoryRequest) {
+  async execute({ category_id }: CategoryRequest): Promise<AppResponse> {
+    if (!category_id) {
+      throw new AppError(
+        'É necessario informar um ID!',
+        StatusCodes.BAD_REQUEST
+      )
+    }
     const categoryExists = await prismaClient.category.findFirst({
       where: { id: category_id }
     })
 
     if (!categoryExists) {
-      throw new Error('Category not found')
+      throw new AppError('Categoria não encontrada', StatusCodes.NOT_FOUND)
     }
 
     await prismaClient.category.delete({
       where: { id: category_id }
     })
 
-    return { message: 'Category removed successfully' }
+    return { data: undefined, message: 'Categoria removida com sucesso!' }
   }
 }
 
