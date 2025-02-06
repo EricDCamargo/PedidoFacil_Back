@@ -5,12 +5,12 @@ import { AppError } from '../../errors/AppError'
 
 class DeletePaymentOrderController {
   async handle(req: Request, res: Response): Promise<Response> {
-    const { order_id } = req.body
+    const payment_id = req.query.payment_id as string
 
     const deletePaymentOrderService = new DeletePaymentOrderService()
 
     try {
-      const result = await deletePaymentOrderService.execute({ order_id })
+      const result = await deletePaymentOrderService.execute({ payment_id })
       return res.status(StatusCodes.OK).json(result)
     } catch (error) {
       if (error instanceof AppError) {

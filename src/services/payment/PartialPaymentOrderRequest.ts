@@ -16,7 +16,14 @@ class PartialPaymentOrderService {
     payment_method,
     value
   }: PartialPaymentOrderRequest): Promise<AppResponse> {
-    const { COMPLETED, PAID, IN_PROGRESS, CLOSED, DRAFT } = OrderStatus
+    const { PAID, IN_PROGRESS, CLOSED, DRAFT } = OrderStatus
+
+    if (!order_id || !payment_method || !value || value <= 0) {
+      throw new AppError(
+        'Dados do pagamento inválidos!',
+        StatusCodes.BAD_REQUEST
+      )
+    }
 
     const order = await prismaClient.order.findUnique({
       where: { id: order_id },
@@ -27,34 +34,9 @@ class PartialPaymentOrderService {
       throw new AppError('Pedido não encontrado!', StatusCodes.NOT_FOUND)
     }
 
-    if (order.status === DRAFT) {
+    if ([DRAFT, IN_PROGRESS, CLOSED].includes(order.status as OrderStatus)) {
       throw new AppError(
-        `Pedido com status 'RASCUNHO', não é possivel registrar o pagamento, mudar status do pedido!`,
-        StatusCodes.BAD_REQUEST
-      )
-    }
-
-    if (order.status === IN_PROGRESS) {
-      throw new AppError(
-        `Pedido com status 'EM PROGRESSO', finalizar entrega do pedido!`,
-        StatusCodes.BAD_REQUEST
-      )
-    }
-
-    if (order.status === PAID) {
-      throw new AppError('Pedido já está pago!', StatusCodes.BAD_REQUEST)
-    }
-
-    if (order.status === CLOSED) {
-      throw new AppError(
-        'Pedido já está pago e fechado!',
-        StatusCodes.BAD_REQUEST
-      )
-    }
-
-    if (value <= 0) {
-      throw new AppError(
-        'Valor de pagamento deve ser maior que zero!',
+        `Pedido com status '${order.status}', não é possível registrar pagamento!`,
         StatusCodes.BAD_REQUEST
       )
     }
@@ -67,25 +49,33 @@ class PartialPaymentOrderService {
       0
     )
 
-    // Calcular o troco (somente se o pagamento total exceder o valor do pedido)
-    const change = totalPaid > orderValue ? totalPaid - orderValue : 0
-
-    console.log('Valor do troco-> '+ change, 'Total pago ' + totalPaid)
-
-    // Registrar o pagamento do pedido
-    const paymentData: any = {
-      value,
-      payment_method,
-      table_id: order.table_id,
-      change: change
+    if (totalPaid >= orderValue) {
+      throw new AppError(
+        `Pedido ${order.number} já está totalmente pago!`,
+        StatusCodes.BAD_REQUEST
+      )
     }
 
+    const newTotalPaid = totalPaid + value
+
+    // Calcular o troco (somente se o pagamento total exceder o valor do pedido)
+    const change = newTotalPaid > orderValue ? newTotalPaid - orderValue : 0
+
+    console.log('Total pago ate então ' + totalPaid)
+    console.log('Novo total pago ' + newTotalPaid)
+    console.log('Valor do troco-> ' + change)
+    // Registrar o pagamento do pedido
     const payment = await prismaClient.payment.create({
-      data: paymentData
+      data: {
+        value,
+        payment_method,
+        table_id: order.table_id,
+        change
+      }
     })
 
     // Criar PaymentOrder para associar o pagamento ao pedido
-    const paymentOrder = await prismaClient.paymentOrder.create({
+    await prismaClient.paymentOrder.create({
       data: {
         payment_id: payment.id,
         order_id,
@@ -94,7 +84,7 @@ class PartialPaymentOrderService {
     })
 
     // Se o pagamento do pedido for quitado, mudar o status para PAID
-    if (totalPaid >= orderValue) {
+    if (newTotalPaid >= orderValue && order.status !== PAID) {
       await prismaClient.order.update({
         where: { id: order_id },
         data: { status: PAID }
@@ -102,7 +92,7 @@ class PartialPaymentOrderService {
     }
 
     return {
-      data: paymentOrder,
+      data: payment,
       message: `Pagamento registrado para o pedido ${order.number} com sucesso!`
     }
   }
