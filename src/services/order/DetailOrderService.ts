@@ -1,3 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface DetailRequest {
@@ -5,7 +8,8 @@ interface DetailRequest {
 }
 
 class DetailOrderService {
-  async execute({ order_id }: DetailRequest) {
+  async execute({ order_id }: DetailRequest): Promise<AppResponse> {
+    // Buscando o pedido com os itens e pagamentos
     const order = await prismaClient.order.findUnique({
       where: {
         id: order_id
@@ -17,15 +21,22 @@ class DetailOrderService {
           }
         },
         table: true,
-        payments: true
+        paymentOrders: {
+          include: {
+            payment: true
+          }
+        }
       }
     })
 
     if (!order) {
-      throw new Error('Pedido não encontrado.')
+      throw new AppError('Pedido não encontrado.', StatusCodes.NOT_FOUND)
     }
 
-    return order
+    return {
+      data: order,
+      message: 'Detalhes do pedido encontrados com sucesso.'
+    }
   }
 }
 

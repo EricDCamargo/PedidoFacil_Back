@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import { DetailOrderService } from '../../services/order/DetailOrderService'
+import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 
 class DetailOrderController {
   async handle(req: Request, res: Response) {
@@ -12,9 +14,14 @@ class DetailOrderController {
         order_id
       })
 
-      return res.json(order)
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message })
+      return res.status(StatusCodes.OK).json(order)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

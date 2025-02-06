@@ -5,14 +5,13 @@ import { AppError } from '../../errors/AppError'
 
 class CloseTableController {
   async handle(req: Request, res: Response) {
-    const { table_id, payment_method } = req.body
+    const { table_id } = req.body
 
     const closeTableService = new CloseTableService()
 
     try {
       const result = await closeTableService.execute({
-        table_id,
-        payment_method
+        table_id
       })
       return res.status(StatusCodes.OK).json(result)
     } catch (error) {

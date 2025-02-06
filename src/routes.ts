@@ -1,6 +1,4 @@
 import { Router } from 'express'
-import multer from 'multer'
-import uploadconfig from './config/multer'
 
 import { isAuthenticated, isAdmin } from './middlewares/isAuthenticated'
 
@@ -37,6 +35,9 @@ import { UpdateTableStatusController } from './controllers/table/UpdateTableStat
 import { GetTableDetailsController } from './controllers/table/GetTableDetailsController'
 import { CloseTableController } from './controllers/table/CloseTableController'
 import { DeleteTableController } from './controllers/table/DeleteTableController'
+
+import { PartialPaymentOrderController } from './controllers/payment/PartialPaymentOrderController'
+import { DeletePaymentOrderController } from './controllers/payment/DeletePaymentOrderController'
 
 const router = Router()
 
@@ -85,5 +86,10 @@ router.put('/table/status', isAuthenticated, new UpdateTableStatusController().h
 router.get('/table/detail', isAuthenticated, new GetTableDetailsController().handle)
 router.put('/table/close', isAuthenticated, new CloseTableController().handle)
 router.delete('/table', isAuthenticated, isAdmin, new DeleteTableController().handle)
+
+// -- Payment Routes --
+
+router.post('/order/payment', isAuthenticated, new PartialPaymentOrderController().handle)
+router.delete('/order/payment', isAuthenticated, new DeletePaymentOrderController().handle)
 
 export { router }

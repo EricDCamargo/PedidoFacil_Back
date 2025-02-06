@@ -11,35 +11,40 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   name       String
-  email      String    @unique
+  email      String   @unique
   password   String
   role       Role
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 
   @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
 }
 
 model Category {
   id         String    @id @default(uuid())
   name       String
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
   products   Product[]
 
   @@map("categories")
 }
 
 model Product {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   price       Float
   description String
   banner      String
-  created_at  DateTime? @default(now())
-  updated_at  DateTime? @default(now())
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
 
   category    Category @relation(fields: [category_id], references: [id])
   category_id String
@@ -67,21 +72,25 @@ model Order {
   table      Table    @relation(fields: [table_id], references: [id])
   status     String   @default("DRAFT")
   name       String?
-  total      Float?
+  total      Float    @default(0)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  items    Item[]
-  payments Payment[]
+  items         Item[]
+  // Relacionamento para acompanhar os pagamentos aplicados individualmente
+  paymentOrders PaymentOrder[]
 
   @@map("orders")
 }
 
 model Item {
-  id         String    @id @default(uuid())
-  amount     Int
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
+  id          String   @id @default(uuid())
+  amount      Int
+  unit_value  Float
+  total_value Float
+  observation String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
 
   order      Order   @relation(fields: [order_id], references: [id])
   product    Product @relation(fields: [product_id], references: [id])
@@ -93,17 +102,32 @@ model Item {
 
 model Payment {
   id             String   @id @default(uuid())
-  order_id       String
-  order          Order    @relation(fields: [order_id], references: [id])
-  value          Float
+  table_id       String // Pagamento associado à mesa (quando aplicável)
+  value          Float // Valor total pago neste registro
   payment_method String
+  change         Float // Troco, se o valor pago ultrapassar o débito
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
+
+  // Relação com a tabela de junção que vincula este pagamento a pedidos específicos.
+  paymentOrders PaymentOrder[]
 
   @@map("payments")
 }
 
-enum Role {
-  ADMIN
-  USER
+// Modelo de junção que associa um pagamento a um pedido específico.
+// Permite distribuir o valor do pagamento entre os pedidos que estão sendo quitados.
+model PaymentOrder {
+  id         String   @id @default(uuid())
+  payment_id String
+  order_id   String
+  value      Float // Valor do pagamento aplicado para este pedido
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  payment Payment @relation(fields: [payment_id], references: [id])
+  order   Order   @relation(fields: [order_id], references: [id])
+
+  @@unique([payment_id, order_id])
+  @@map("payment_orders")
 }

@@ -1,4 +1,6 @@
+import { StatusCodes } from 'http-status-codes'
 import { AppResponse } from '../../@types/app.types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface UpdateTableStatusRequest {
@@ -16,7 +18,7 @@ class UpdateTableStatusService {
     })
 
     if (!table) {
-      throw new Error('Mesa não encontrada.')
+      throw new AppError('Mesa não encontrada.', StatusCodes.NOT_FOUND)
     }
 
     const updatedTable = await prismaClient.table.update({

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import { RemoveItemService } from '../../services/order/RemoveItemService'
+import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 
 class RemoveItemController {
   async handle(req: Request, res: Response) {
@@ -8,13 +10,18 @@ class RemoveItemController {
     const removeItem = new RemoveItemService()
 
     try {
-      const result = await removeItem.execute({
+      const item = await removeItem.execute({
         item_id
       })
 
-      return res.json(result)
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message })
+      return res.status(StatusCodes.OK).json(item)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

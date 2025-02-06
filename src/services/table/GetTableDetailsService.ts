@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 import { AppResponse } from '../../@types/app.types'
 import prismaClient from '../../prisma'
 
@@ -15,7 +17,7 @@ class GetTableDetailsService {
     })
 
     if (!table) {
-      throw new Error('Mesa não encontrada!')
+      throw new AppError('Mesa não encontrada!', StatusCodes.NOT_FOUND)
     }
 
     return { data: table, message: 'Mesa ativa!' }

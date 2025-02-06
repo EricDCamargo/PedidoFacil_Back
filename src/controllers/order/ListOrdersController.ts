@@ -1,5 +1,7 @@
 import { Response, Request } from 'express'
 import { ListOrdersService } from '../../services/order/ListOrdersService'
+import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 
 class ListOrdersController {
   async handle(req: Request, res: Response) {
@@ -9,9 +11,14 @@ class ListOrdersController {
 
     try {
       const orders = await listOrders.execute({ table_id })
-      return res.json(orders)
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message })
+      return res.status(StatusCodes.OK).json(orders)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

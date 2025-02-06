@@ -26,21 +26,15 @@ class CreateTableService {
     if (tableExists) {
       throw new AppError('Mesa ja existe!', StatusCodes.CONFLICT)
     }
-    try {
-      const table = await prismaClient.table.create({
-        data: {
-          number,
-          status: AVAILABLE
-        }
-      })
 
-      return { data: table, message: 'Mesa criada com sucesso!' }
-    } catch (error) {
-      throw new AppError(
-        'Erro ao criar mesa!',
-        StatusCodes.INTERNAL_SERVER_ERROR
-      )
-    }
+    const table = await prismaClient.table.create({
+      data: {
+        number,
+        status: AVAILABLE
+      }
+    })
+
+    return { data: table, message: 'Mesa criada com sucesso!' }
   }
 }
 

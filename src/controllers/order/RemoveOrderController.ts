@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
 import { RemoveOrderService } from '../../services/order/RemoveOrderService'
+import { StatusCodes } from 'http-status-codes'
+import { AppError } from '../../errors/AppError'
 
 class RemoveOrderController {
   async handle(req: Request, res: Response) {
@@ -12,9 +14,15 @@ class RemoveOrderController {
         order_id
       })
 
-      return res.json(order)
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message })
+      return res.status(StatusCodes.OK).json(order)
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      console.log(error)
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: 'Internal Server Error' })
     }
   }
 }

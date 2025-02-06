@@ -1,7 +1,6 @@
 interface AppResponse {
-  data: any
+  data?: any
   message: string
 }
-
 
 export { AppResponse }

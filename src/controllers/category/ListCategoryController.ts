@@ -6,7 +6,7 @@ import { AppError } from '../../errors/AppError'
 class ListCategoryController {
   async handle(req: Request, res: Response) {
     const listCategoryService = new ListCategoryService()
-    
+
     try {
       const category = await listCategoryService.execute()
       return res.status(StatusCodes.OK).json(category)

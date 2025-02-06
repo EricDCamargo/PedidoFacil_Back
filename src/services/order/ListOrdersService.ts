@@ -15,6 +15,7 @@ class ListOrdersService {
         in: [DRAFT, IN_PROGRESS, COMPLETED, PAID]
       }
     }
+
     if (table_id) {
       filter.table_id = table_id
     }
@@ -39,7 +40,11 @@ class ListOrdersService {
             }
           }
         },
-        payments: true
+        paymentOrders: {
+          include: {
+            payment: true
+          }
+        }
       }
     })
 

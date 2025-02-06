@@ -1,4 +1,7 @@
+import { StatusCodes } from 'http-status-codes'
+import { AppResponse } from '../../@types/app.types'
 import { OrderStatus, TableStatus } from '../../@types/types'
+import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 
 interface OrderRequest {
@@ -7,7 +10,7 @@ interface OrderRequest {
 }
 
 class CreateOrderService {
-  async execute({ table_id, name }: OrderRequest) {
+  async execute({ table_id, name }: OrderRequest): Promise<AppResponse> {
     const { DRAFT, IN_PROGRESS } = OrderStatus
     const { OCCUPIED } = TableStatus
 
@@ -16,7 +19,7 @@ class CreateOrderService {
     })
 
     if (!table) {
-      throw new Error('Mesa não encontrada.')
+      throw new AppError('Mesa não encontrada.', StatusCodes.NOT_FOUND)
     }
 
     const existingOrders = await prismaClient.order.findMany({
@@ -36,13 +39,13 @@ class CreateOrderService {
     }
     const order = await prismaClient.order.create({
       data: {
-        table_id,
+        table: { connect: { id: table_id } },
         name,
         status: DRAFT
       }
     })
 
-    return order
+    return { data: order, message: 'Pedido criado!' }
   }
 }
 
