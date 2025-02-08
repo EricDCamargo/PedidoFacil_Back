@@ -5,7 +5,7 @@ import { AppError } from '../../errors/AppError'
 
 class CloseTableController {
   async handle(req: Request, res: Response) {
-    const { table_id } = req.body
+    const table_id = req.query.table_id as string
 
     const closeTableService = new CloseTableService()
 

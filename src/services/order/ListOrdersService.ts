@@ -9,10 +9,11 @@ interface ListOrdersRequest {
 
 class ListOrdersService {
   async execute({ table_id }: ListOrdersRequest): Promise<AppResponse> {
-    const { DRAFT, IN_PROGRESS, COMPLETED, PAID } = OrderStatus
+    const { DRAFT, IN_PROGRESS, COMPLETED, PAID, CLOSED } = OrderStatus
+
     const filter: Prisma.OrderWhereInput = {
       status: {
-        in: [DRAFT, IN_PROGRESS, COMPLETED, PAID]
+        in: [DRAFT, IN_PROGRESS, COMPLETED, PAID, ...(table_id ? [] : [CLOSED])]
       }
     }
 
