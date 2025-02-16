@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
-import { OrderStatus } from '../../@types/types'
+import { OrderStatus, TableStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
 
 interface OrderRequest {
@@ -50,6 +50,23 @@ class RemoveOrderService {
     const deletedOrder = await prismaClient.order.delete({
       where: { id: order_id }
     })
+
+    // Check if there are any remaining orders for the table
+    const hasRemainingOrders = await prismaClient.order.findFirst({
+      where: {
+        table_id: order.table_id,
+        status: {
+          not: OrderStatus.CLOSED
+        }
+      }
+    })
+
+    if (!hasRemainingOrders) {
+      await prismaClient.table.update({
+        where: { id: order.table_id },
+        data: { status: TableStatus.AVAILABLE }
+      })
+    }
 
     return { data: deletedOrder, message: 'Pedido removido com sucesso.' }
   }
