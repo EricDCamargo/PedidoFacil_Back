@@ -16,6 +16,17 @@ class CreateCategoryService {
       )
     }
 
+    const existingCategory = await prismaClient.category.findUnique({
+      where: { name }
+    })
+
+    if (existingCategory) {
+      throw new AppError(
+        'Já existe uma categoria com esse nome!',
+        StatusCodes.CONFLICT
+      )
+    }
+
     const category = await prismaClient.category.create({
       data: {
         name: name

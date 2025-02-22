@@ -38,6 +38,7 @@ import { DeleteTableController } from './controllers/table/DeleteTableController
 
 import { PartialPaymentOrderController } from './controllers/payment/PartialPaymentOrderController'
 import { DeletePaymentOrderController } from './controllers/payment/DeletePaymentOrderController'
+import { UpdateCategoryController } from './controllers/category/UpdateCategoryController'
 
 const router = Router()
 
@@ -56,6 +57,7 @@ router.put('/users', isAuthenticated, isAdmin, new UpdateUserController().handle
 router.post('/category', isAuthenticated, isAdmin, new CreateCategoryController().handle)
 router.get('/category', isAuthenticated, new ListCategoryController().handle)
 router.delete('/category', isAuthenticated, isAdmin, new RemoveCategoryController().handle)
+router.put('/category', isAuthenticated, new UpdateCategoryController().handle)
 
 // -- Product Routes --
 

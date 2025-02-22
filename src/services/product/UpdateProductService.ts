@@ -41,6 +41,21 @@ class UpdateProductService {
       )
     }
 
+    // Verificar se já existe um produto com o mesmo nome
+    const existingProduct = await prismaClient.product.findFirst({
+      where: {
+        name,
+        NOT: { id: product_id }
+      }
+    })
+
+    if (existingProduct) {
+      throw new AppError(
+        'Já existe um produto com esse nome!',
+        StatusCodes.CONFLICT
+      )
+    }
+
     const updatedProduct = await prismaClient.product.update({
       where: { id: product_id },
       data: {

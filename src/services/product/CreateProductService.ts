@@ -32,6 +32,18 @@ class CreateProductService {
       )
     }
 
+    // Verificar se já existe um produto com o mesmo nome
+    const existingProduct = await prismaClient.product.findUnique({
+      where: { name }
+    })
+
+    if (existingProduct) {
+      throw new AppError(
+        'Já existe um produto com esse nome!',
+        StatusCodes.CONFLICT
+      )
+    }
+
     const product = await prismaClient.product.create({
       data: {
         name,
