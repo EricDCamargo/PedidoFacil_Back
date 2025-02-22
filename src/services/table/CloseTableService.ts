@@ -11,7 +11,7 @@ interface CloseTableRequest {
 class CloseTableService {
   async execute({ table_id }: CloseTableRequest): Promise<AppResponse> {
     const { AVAILABLE, OCCUPIED } = TableStatus
-    const { PAID, CLOSED } = OrderStatus
+    const { PAID, COMPLETED, CLOSED } = OrderStatus
 
     const table = await prismaClient.table.findUnique({
       where: { id: table_id }
@@ -34,42 +34,54 @@ class CloseTableService {
       throw new AppError('Não há pedidos nessa mesa!', StatusCodes.BAD_REQUEST)
     }
 
-    // Verificar se existem pedidos não pagos
-    const unpaidOrders = orders.filter(order => order.status !== PAID)
-    if (unpaidOrders.length > 0) {
+    const openOrderStatuses = [
+      OrderStatus.DRAFT,
+      OrderStatus.IN_PROGRESS,
+      OrderStatus.COMPLETED
+    ]
+    const hasOpenOrders = await prismaClient.order.findFirst({
+      where: {
+        table_id,
+        status: {
+          in: openOrderStatuses
+        }
+      }
+    })
+
+    if (hasOpenOrders) {
       throw new AppError(
-        'Não é possível fechar a mesa: existem pedidos não pagos!',
+        'Não é possível fechar a mesa: existem pedidos em aberto!',
         StatusCodes.BAD_REQUEST
       )
     }
 
-    // Verificar se todos os pedidos pagos estão quitados
-    const allPaidOrdersFullyPaid = orders.every(order => {
-      if (order.status !== PAID) return false // Se o pedido não for pago, ele não deve ser considerado quitado
+    // Get the total of paid and completed orders
+    const { _sum: { total: totalOrders = 0 } = {} } =
+      await prismaClient.order.aggregate({
+        where: { table_id, status: { in: [PAID, COMPLETED] } },
+        _sum: { total: true }
+      })
 
-      const totalOrderValue = order.total || 0
-      const totalPaidForOrder = order.paymentOrders.reduce(
-        (sum, paymentOrder) => sum + (paymentOrder.value || 0),
-        0
-      )
+    // Get the total of payments made
+    const { _sum: { value: totalPayments = 0 } = {} } =
+      await prismaClient.paymentOrder.aggregate({
+        where: { order: { table_id, status: { in: [PAID, COMPLETED] } } },
+        _sum: { value: true }
+      })
 
-      return totalPaidForOrder >= totalOrderValue
-    })
-
-    if (!allPaidOrdersFullyPaid) {
+    // Validation: were all paid orders paid off?
+    if (totalPayments < totalOrders) {
       throw new AppError(
         'Nem todos os pedidos pagos foram quitados!',
         StatusCodes.BAD_REQUEST
       )
     }
 
-    // Atualizar pedidos para "CLOSED"
     await prismaClient.order.updateMany({
       where: { table_id, status: PAID },
       data: { status: CLOSED }
     })
 
-    // Atualizar status da mesa para "AVAILABLE"
     await prismaClient.table.update({
       where: { id: table_id },
       data: { status: AVAILABLE }
