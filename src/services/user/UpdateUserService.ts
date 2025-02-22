@@ -31,6 +31,16 @@ class UpdateUserService {
     if (!user) {
       throw new AppError('Usuario não encontrado!', StatusCodes.NOT_FOUND)
     }
+    const userAlreadyExists = await prismaClient.user.findUnique({
+      where: { email }
+    })
+
+    if (userAlreadyExists) {
+      throw new AppError(
+        'Email já cadastrado em outro usuario!',
+        StatusCodes.CONFLICT
+      )
+    }
 
     const updatedUser = await prismaClient.user.update({
       where: { id: user_id },

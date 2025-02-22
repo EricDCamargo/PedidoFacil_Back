@@ -27,7 +27,7 @@ class CreateUserService {
     }
 
     const userAlreadyExists = await prismaClient.user.findUnique({
-      where: { email: email }
+      where: { email }
     })
 
     if (userAlreadyExists) {
