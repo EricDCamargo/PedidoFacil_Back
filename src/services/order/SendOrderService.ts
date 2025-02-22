@@ -43,7 +43,7 @@ class SendOrderService {
 
     const updatedOrder = await prismaClient.order.update({
       where: { id: order_id },
-      data: { status: IN_PROGRESS }
+      data: { status: IN_PROGRESS, updated_at: new Date() }
     })
 
     return { data: updatedOrder, message: 'Pedido enviado para a cozinha!' }

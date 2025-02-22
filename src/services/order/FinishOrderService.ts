@@ -28,7 +28,7 @@ class FinishOrderService {
 
     const updatedOrder = await prismaClient.order.update({
       where: { id: order_id },
-      data: { status: COMPLETED }
+      data: { status: COMPLETED, updated_at: new Date() }
     })
 
     return { data: updatedOrder, message: 'Pedido finalizado com sucesso!' }

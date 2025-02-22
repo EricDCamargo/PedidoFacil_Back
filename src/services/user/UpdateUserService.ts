@@ -37,7 +37,8 @@ class UpdateUserService {
       data: {
         name,
         email,
-        role
+        role,
+        updated_at: new Date()
       },
       select: {
         id: true,

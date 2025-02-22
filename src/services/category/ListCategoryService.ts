@@ -6,9 +6,8 @@ import prismaClient from '../../prisma'
 class ListCategoryService {
   async execute(): Promise<AppResponse> {
     const category = await prismaClient.category.findMany({
-      select: {
-        id: true,
-        name: true
+      orderBy: {
+        name: 'asc'
       }
     })
     if (!category) {

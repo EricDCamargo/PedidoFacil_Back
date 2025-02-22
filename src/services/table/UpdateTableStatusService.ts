@@ -23,7 +23,7 @@ class UpdateTableStatusService {
 
     const updatedTable = await prismaClient.table.update({
       where: { id: table_id },
-      data: { status }
+      data: { status, updated_at: new Date() }
     })
 
     return { data: updatedTable, message: 'Mesa editada com sucesso!' }

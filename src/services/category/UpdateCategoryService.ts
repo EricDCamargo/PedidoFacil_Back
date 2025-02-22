@@ -41,7 +41,7 @@ class UpdateCategoryService {
 
     const updatedCategory = await prismaClient.category.update({
       where: { id },
-      data: { name },
+      data: { name, updated_at: new Date() },
       select: {
         id: true,
         name: true
