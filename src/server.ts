@@ -54,6 +54,6 @@ io.on('connection', socket => {
   })
 })
 
-server.listen(3333, () => console.log('Server online!'))
+server.listen(process.env.PORT, () => console.log('Server online!'))
 
 export { io }
