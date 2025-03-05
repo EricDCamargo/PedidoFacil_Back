@@ -28,8 +28,13 @@ class UpdateUserService {
             if (!user) {
                 throw new AppError_1.AppError('Usuario não encontrado!', http_status_codes_1.StatusCodes.NOT_FOUND);
             }
-            const userAlreadyExists = yield prisma_1.default.user.findUnique({
-                where: { email }
+            const userAlreadyExists = yield prisma_1.default.user.findFirst({
+                where: {
+                    email,
+                    NOT: {
+                        id: user_id
+                    }
+                }
             });
             if (userAlreadyExists) {
                 throw new AppError_1.AppError('Email já cadastrado em outro usuario!', http_status_codes_1.StatusCodes.CONFLICT);
