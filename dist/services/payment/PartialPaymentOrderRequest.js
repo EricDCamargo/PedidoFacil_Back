@@ -43,9 +43,6 @@ class PartialPaymentOrderService {
             const newTotalPaid = totalPaid + value;
             // Calcular o troco (somente se o pagamento total exceder o valor do pedido)
             const change = newTotalPaid > orderValue ? newTotalPaid - orderValue : 0;
-            console.log('Total pago ate então ' + totalPaid);
-            console.log('Novo total pago ' + newTotalPaid);
-            console.log('Valor do troco-> ' + change);
             // Registrar o pagamento do pedido
             const payment = yield prisma_1.default.payment.create({
                 data: {

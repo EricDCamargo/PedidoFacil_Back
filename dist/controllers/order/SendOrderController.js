@@ -13,15 +13,18 @@ exports.SendOrderController = void 0;
 const SendOrderService_1 = require("../../services/order/SendOrderService");
 const http_status_codes_1 = require("http-status-codes");
 const AppError_1 = require("../../errors/AppError");
+const PrinterService_1 = require("../../services/printer/PrinterService");
 class SendOrderController {
     handle(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { order_id } = req.body;
             const sendOrder = new SendOrderService_1.SendOrderService();
+            const printerService = new PrinterService_1.PrinterService();
             try {
                 const order = yield sendOrder.execute({
                     order_id
                 });
+                printerService.testPrintKitchenOrder(order.data);
                 return res.status(http_status_codes_1.StatusCodes.OK).json(order);
             }
             catch (error) {

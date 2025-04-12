@@ -41,9 +41,16 @@ class SendOrderService {
       )
     }
 
-    const updatedOrder = await prismaClient.order.update({
+    // Atualizar o status do pedido
+    await prismaClient.order.update({
       where: { id: order_id },
-      data: { status: IN_PROGRESS, updated_at: new Date() }
+      data: { status: IN_PROGRESS, updated_at: new Date() },
+    })
+
+    // Buscar o pedido atualizado com os relacionamentos necessários
+    const updatedOrder = await prismaClient.order.findUnique({
+      where: { id: order_id },
+      include: { items: { include: { product: true } } },
     })
 
     return { data: updatedOrder, message: 'Pedido enviado para a cozinha!' }
