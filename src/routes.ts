@@ -41,6 +41,7 @@ import { DeletePaymentOrderController } from './controllers/payment/DeletePaymen
 import { UpdateCategoryController } from './controllers/category/UpdateCategoryController'
 import { logMiddleware } from './middlewares/logMiddleware'
 import { ListLogsController } from './controllers/log/ListLogsController'
+import { TestPrinterConectionController } from './controllers/printer/PrinterController'
 
 const router = Router()
 
@@ -101,5 +102,9 @@ router.delete('/order/payment', isAuthenticated, new DeletePaymentOrderControlle
 
 // -- Logs Routes --
 router.get('/logs', isAuthenticated, isAdmin, new ListLogsController().handle)
+
+// -- Printer Routes --
+
+router.post('/printer/test', isAuthenticated, isAdmin, new TestPrinterConectionController().handle)
 
 export { router }

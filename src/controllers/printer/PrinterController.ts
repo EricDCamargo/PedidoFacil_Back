@@ -4,20 +4,14 @@ import { StatusCodes } from 'http-status-codes'
 import { AppError } from '../../errors/AppError'
 import { PrinterService } from '../../services/printer/PrinterService'
 
-class SendOrderController {
+class TestPrinterConectionController {
   async handle(req: Request, res: Response) {
-    const { order_id } = req.body
-
-    const sendOrder = new SendOrderService()
     const printerService = new PrinterService()
 
     try {
-      const order = await sendOrder.execute({
-        order_id
-      })
-      printerService.printKitchenOrder(order.data)
+      const print = await printerService.testPrinterConnection()
 
-      return res.status(StatusCodes.OK).json(order)
+      return res.status(StatusCodes.OK).json(print)
     } catch (error) {
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({ error: error.message })
@@ -29,4 +23,4 @@ class SendOrderController {
   }
 }
 
-export { SendOrderController }
+export { TestPrinterConectionController }
