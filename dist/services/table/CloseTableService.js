@@ -38,22 +38,6 @@ class CloseTableService {
             if (orders.length === 0) {
                 throw new AppError_1.AppError('Não há pedidos nessa mesa!', http_status_codes_1.StatusCodes.BAD_REQUEST);
             }
-            const openOrderStatuses = [
-                types_1.OrderStatus.DRAFT,
-                types_1.OrderStatus.IN_PROGRESS,
-                types_1.OrderStatus.COMPLETED
-            ];
-            const hasOpenOrders = yield prisma_1.default.order.findFirst({
-                where: {
-                    table_id,
-                    status: {
-                        in: openOrderStatuses
-                    }
-                }
-            });
-            if (hasOpenOrders) {
-                throw new AppError_1.AppError('Não é possível fechar a mesa: existem pedidos em aberto!', http_status_codes_1.StatusCodes.BAD_REQUEST);
-            }
             // Get the total of paid and completed orders
             const { _sum: { total: totalOrders = 0 } = {} } = yield prisma_1.default.order.aggregate({
                 where: { table_id, status: { in: [PAID, COMPLETED] } },

@@ -39,11 +39,17 @@ import { DeleteTableController } from './controllers/table/DeleteTableController
 import { PartialPaymentOrderController } from './controllers/payment/PartialPaymentOrderController'
 import { DeletePaymentOrderController } from './controllers/payment/DeletePaymentOrderController'
 import { UpdateCategoryController } from './controllers/category/UpdateCategoryController'
+import { logMiddleware } from './middlewares/logMiddleware'
+import { ListLogsController } from './controllers/log/ListLogsController'
+import { TestPrinterConectionController } from './controllers/printer/PrinterController'
 
 const router = Router()
 
 // upload products using multer
 //const upload = multer(uploadconfig.upload('./tmp'))
+
+//Aplying logging middleware to all routes
+router.use(logMiddleware)
 
 // -- User Routes --
 router.post('/users', new CreateUserController().handle)
@@ -93,5 +99,12 @@ router.delete('/table', isAuthenticated, isAdmin, new DeleteTableController().ha
 
 router.post('/order/payment', isAuthenticated, new PartialPaymentOrderController().handle)
 router.delete('/order/payment', isAuthenticated, new DeletePaymentOrderController().handle)
+
+// -- Logs Routes --
+router.get('/logs', isAuthenticated, isAdmin, new ListLogsController().handle)
+
+// -- Printer Routes --
+
+router.post('/printer/test', isAuthenticated, isAdmin, new TestPrinterConectionController().handle)
 
 export { router }

@@ -34,27 +34,6 @@ class CloseTableService {
       throw new AppError('Não há pedidos nessa mesa!', StatusCodes.BAD_REQUEST)
     }
 
-    const openOrderStatuses = [
-      OrderStatus.DRAFT,
-      OrderStatus.IN_PROGRESS,
-      OrderStatus.COMPLETED
-    ]
-    const hasOpenOrders = await prismaClient.order.findFirst({
-      where: {
-        table_id,
-        status: {
-          in: openOrderStatuses
-        }
-      }
-    })
-
-    if (hasOpenOrders) {
-      throw new AppError(
-        'Não é possível fechar a mesa: existem pedidos em aberto!',
-        StatusCodes.BAD_REQUEST
-      )
-    }
-
     // Get the total of paid and completed orders
     const { _sum: { total: totalOrders = 0 } = {} } =
       await prismaClient.order.aggregate({
