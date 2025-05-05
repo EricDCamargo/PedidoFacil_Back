@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-import { SendOrderService } from '../../services/order/SendOrderService'
 import { StatusCodes } from 'http-status-codes'
 import { AppError } from '../../errors/AppError'
 import { PrinterService } from '../../services/printer/PrinterService'

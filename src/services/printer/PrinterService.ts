@@ -19,7 +19,7 @@ class PrinterService {
   constructor() {
     this.printer = new ThermalPrinter({
       type: PrinterTypes.DARUMA,
-      interface: '//localhost/Daruma',
+      interface: process.env.PRINTER_INTERFACE,
       characterSet: CharacterSet.PC860_PORTUGUESE,
       removeSpecialCharacters: false,
       lineCharacter: '=',
@@ -102,6 +102,7 @@ class PrinterService {
   }
 
   async testPrinterConnection(): Promise<AppResponse> {
+    console.log('PRINTER_INTERFACE:', process.env.PRINTER_INTERFACE)
     this.printer.alignCenter()
     this.printer.println('Teste de Conexão')
     this.printer.newLine()

@@ -17,6 +17,8 @@ services:
       - db
     command: >
       sh -c "npx prisma migrate deploy && node dist/server.js"
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
 
   db:
     image: postgres:15
