@@ -12,10 +12,11 @@ class SendOrderController {
     const printerService = new PrinterService()
 
     try {
-      const order = await sendOrder.execute({
-        order_id
-      })
-      printerService.printKitchenOrder(order.data)
+      const order = await sendOrder
+        .execute({
+          order_id
+        })
+        .then(() => printerService.printKitchenOrder(order_id))
 
       return res.status(StatusCodes.OK).json(order)
     } catch (error) {
