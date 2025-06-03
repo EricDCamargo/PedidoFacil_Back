@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   backend:
-    container_name: pedidofacilapi
+    container_name: pedidofacil_api
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,7 +8,7 @@ services:
     ports:
       - '3333:3333'
     networks:
-      - pedidofacilapi_default
+      - pedidofacil_default
     restart: unless-stopped
     env_file: .env.local
     depends_on:
@@ -26,11 +24,11 @@ services:
     container_name: pedidofacildb
     env_file: .env.local
     networks:
-      - pedidofacilapi_default
+      - pedidofacil_default
     ports:
       - '5432:5432'
     expose:
       - '5432'
 
 networks:
-  pedidofacilapi_default:
+  pedidofacil_default:
