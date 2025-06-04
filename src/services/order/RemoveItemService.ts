@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes'
 import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
+import { SocketEvents } from '../../@types/socket'
+import { io } from '../../server'
 
 interface ItemRequest {
   item_id: string
@@ -39,6 +41,7 @@ class RemoveItemService {
       where: { id: order.id },
       data: { total }
     })
+    await io.emit(SocketEvents.ORDER_CHANGED, { table_id: order.table_id })
 
     return { message: 'Item removido com sucesso' }
   }

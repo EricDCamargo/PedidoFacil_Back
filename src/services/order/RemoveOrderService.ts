@@ -3,6 +3,8 @@ import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
 import { OrderStatus, TableStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
+import { SocketEvents } from '../../@types/socket'
+import { io } from '../../server'
 
 interface OrderRequest {
   order_id: string
@@ -47,9 +49,13 @@ class RemoveOrderService {
       })
     }
 
-    const deletedOrder = await prismaClient.order.delete({
-      where: { id: order_id }
-    })
+    const deletedOrder = await prismaClient.order
+      .delete({
+        where: { id: order_id }
+      })
+      .then(() =>
+        io.emit(SocketEvents.ORDER_CHANGED, { table_id: order.table_id })
+      )
 
     // Check if there are any remaining orders for the table
     const hasRemainingOrders = await prismaClient.order.findFirst({
@@ -66,6 +72,7 @@ class RemoveOrderService {
         where: { id: order.table_id },
         data: { status: TableStatus.AVAILABLE }
       })
+      await io.emit(SocketEvents.TABLE_STATUS_CHANGED)
     }
 
     return { data: deletedOrder, message: 'Pedido removido com sucesso.' }

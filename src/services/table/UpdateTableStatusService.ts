@@ -2,6 +2,8 @@ import { StatusCodes } from 'http-status-codes'
 import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
+import { SocketEvents } from '../../@types/socket'
+import { io } from '../../server'
 
 interface UpdateTableStatusRequest {
   table_id: string
@@ -25,6 +27,7 @@ class UpdateTableStatusService {
       where: { id: table_id },
       data: { status, updated_at: new Date() }
     })
+    await io.emit(SocketEvents.TABLE_STATUS_CHANGED)
 
     return { data: updatedTable, message: 'Mesa editada com sucesso!' }
   }

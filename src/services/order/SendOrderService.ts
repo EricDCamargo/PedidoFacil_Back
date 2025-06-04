@@ -3,6 +3,8 @@ import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
 import { OrderStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
+import { SocketEvents } from '../../@types/socket'
+import { io } from '../../server'
 
 interface SendOrderRequest {
   order_id: string
@@ -44,13 +46,14 @@ class SendOrderService {
     // Atualizar o status do pedido
     await prismaClient.order.update({
       where: { id: order_id },
-      data: { status: IN_PROGRESS, updated_at: new Date() },
+      data: { status: IN_PROGRESS, updated_at: new Date() }
     })
+    await io.emit(SocketEvents.ORDER_CHANGED, { table_id: order.table_id })
 
     // Buscar o pedido atualizado com os relacionamentos necessários
     const updatedOrder = await prismaClient.order.findUnique({
       where: { id: order_id },
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: true } } }
     })
 
     return { data: updatedOrder, message: 'Pedido enviado para a cozinha!' }

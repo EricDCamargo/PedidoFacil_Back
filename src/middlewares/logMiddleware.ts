@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import prismaClient from '../prisma'
+import { io } from '../server'
+import { SocketEvents } from '../@types/socket'
 
 export async function logMiddleware(
   req: Request,
@@ -41,6 +43,8 @@ export async function logMiddleware(
         details
       }
     })
+
+    await io.emit(SocketEvents.LOG_CREATED)
   } catch (error) {
     console.error('Erro ao registrar log:', error)
   }

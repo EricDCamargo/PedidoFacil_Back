@@ -45,11 +45,10 @@ class CloseTableController {
         }
       })
 
-      const result = await closeTableService
-        .execute({
-          table_id
-        })
-        .then(() => printerService.printPaidOrders(paidOrders))
+      const result = await closeTableService.execute({
+        table_id
+      })
+      await printerService.printPaidOrders(paidOrders)
 
       return res.status(StatusCodes.OK).json(result)
     } catch (error) {

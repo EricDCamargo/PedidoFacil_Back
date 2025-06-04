@@ -3,6 +3,8 @@ import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
 import { OrderStatus } from '../../@types/types'
 import prismaClient from '../../prisma'
+import { SocketEvents } from '../../@types/socket'
+import { io } from '../../server'
 
 interface OrderRequest {
   order_id: string
@@ -30,6 +32,7 @@ class FinishOrderService {
       where: { id: order_id },
       data: { status: COMPLETED, updated_at: new Date() }
     })
+    await io.emit(SocketEvents.ORDER_CHANGED, { table_id: order.table_id })
 
     return { data: updatedOrder, message: 'Pedido finalizado com sucesso!' }
   }

@@ -5,6 +5,8 @@ import path from 'path'
 import { router } from './routes'
 import fileUpload from 'express-fileupload'
 import { StatusCodes } from 'http-status-codes'
+import http from 'http'
+import { Server } from 'socket.io'
 
 const app = express()
 
@@ -33,4 +35,18 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   })
 })
 
-app.listen(process.env.PORT, () => console.log('Server online!'))
+const server = http.createServer(app)
+
+const io = new Server(server)
+
+io.on('connection', socket => {
+  console.log('Novo cliente conectado:', socket.id)
+
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id)
+  })
+})
+
+server.listen(process.env.PORT, () => console.log('Server online!'))
+
+export { io }

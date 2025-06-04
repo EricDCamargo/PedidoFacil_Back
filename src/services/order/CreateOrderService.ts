@@ -3,6 +3,9 @@ import { AppResponse } from '../../@types/app.types'
 import { OrderStatus, TableStatus } from '../../@types/types'
 import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
+import { SocketEvents } from '../../@types/socket'
+import { io } from '../../server'
+import { Order } from '@prisma/client'
 
 interface OrderRequest {
   table_id: string
@@ -32,10 +35,12 @@ class CreateOrderService {
     })
 
     if (existingOrders.length === 0) {
-      await prismaClient.table.update({
-        where: { id: table_id },
-        data: { status: OCCUPIED }
-      })
+      await prismaClient.table
+        .update({
+          where: { id: table_id },
+          data: { status: OCCUPIED }
+        })
+        .then(() => io.emit(SocketEvents.TABLE_STATUS_CHANGED))
     }
     const order = await prismaClient.order.create({
       data: {
@@ -44,6 +49,7 @@ class CreateOrderService {
         status: DRAFT
       }
     })
+    await io.emit(SocketEvents.ORDER_CHANGED, { table_id })
 
     return { data: order, message: 'Pedido criado!' }
   }
