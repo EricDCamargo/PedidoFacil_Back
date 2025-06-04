@@ -20,7 +20,7 @@ services:
 
   db:
     image: postgres:15
-    restart: always
+    restart: unless-stopped
     container_name: pedidofacildb
     env_file: .env.local
     networks:
@@ -29,6 +29,12 @@ services:
       - '5432:5432'
     expose:
       - '5432'
+    volumes:
+      - pedidofacil_pgdata:/var/lib/postgresql/data
 
 networks:
   pedidofacil_default:
+    external: true
+
+volumes:
+  pedidofacil_pgdata:
