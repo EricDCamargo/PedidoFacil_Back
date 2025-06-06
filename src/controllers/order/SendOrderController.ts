@@ -12,13 +12,22 @@ class SendOrderController {
     const printerService = new PrinterService()
 
     try {
-      const order = await sendOrder
-        .execute({
-          order_id
-        })
-        .then(() => printerService.printKitchenOrder(order_id))
+      const orderResponse = await sendOrder.execute({ order_id })
 
-      return res.status(StatusCodes.OK).json(order)
+      try {
+        await printerService.printKitchenOrder(order_id)
+      } catch (err) {
+        const printError =
+          err instanceof AppError
+            ? err.message
+            : 'Erro inesperado durante execução do serviço de impressão.'
+
+        orderResponse.message = orderResponse.message
+          ? `${orderResponse.message} (Observação: ${printError})`
+          : `Observação: ${printError}`
+      }
+
+      return res.status(StatusCodes.OK).json(orderResponse)
     } catch (error) {
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({ error: error.message })

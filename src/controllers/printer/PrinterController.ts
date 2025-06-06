@@ -23,7 +23,6 @@ class PrinterController {
   async printOrderToKitchen(req: Request, res: Response) {
     const order_id = req.query.order_id as string
     const printerService = new PrinterService()
-
     try {
       const print = await printerService.printKitchenOrder(order_id)
 
@@ -32,7 +31,6 @@ class PrinterController {
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({ error: error.message })
       }
-      console.error('Error printing order to kitchen:', error)
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ error: 'Internal Server Error' })

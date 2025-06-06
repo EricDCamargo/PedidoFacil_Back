@@ -14,7 +14,7 @@ class CloseTableController {
     const printerService = new PrinterService()
 
     try {
-      // Buscar pedidos com status em aberto, se tiver algum não é possível fechar a mesa
+      // Search for orders with open status, if there are any, it´s not possible to close the table.
       const hasOpenOrders = await prismaClient.order.findFirst({
         where: {
           table_id,
@@ -45,10 +45,19 @@ class CloseTableController {
         }
       })
 
-      const result = await closeTableService.execute({
-        table_id
-      })
-      await printerService.printPaidOrders(paidOrders)
+      const result = await closeTableService.execute({ table_id })
+
+      try {
+        await printerService.printPaidOrders(paidOrders)
+      } catch (err) {
+        const printError =
+          err instanceof AppError
+            ? err.message
+            : 'Erro inesperado durante execução do serviço de impressão.'
+        result.message = result.message
+          ? `${result.message} (Observação: ${printError})`
+          : `Observação: ${printError}`
+      }
 
       return res.status(StatusCodes.OK).json(result)
     } catch (error) {
