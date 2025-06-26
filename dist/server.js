@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.io = void 0;
 const express_1 = __importDefault(require("express"));
 require("express-async-errors");
 const cors_1 = __importDefault(require("cors"));
@@ -10,6 +11,8 @@ const path_1 = __importDefault(require("path"));
 const routes_1 = require("./routes");
 const express_fileupload_1 = __importDefault(require("express-fileupload"));
 const http_status_codes_1 = require("http-status-codes");
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
 const app = (0, express_1.default)();
 //Default middlewares
 app.use(express_1.default.json());
@@ -30,4 +33,13 @@ app.use((err, req, res, next) => {
         messege: 'Internal server error'
     });
 });
-app.listen(process.env.PORT, () => console.log('Server online!'));
+const server = http_1.default.createServer(app);
+const io = new socket_io_1.Server(server);
+exports.io = io;
+io.on('connection', socket => {
+    console.log('Novo cliente conectado:', socket.id);
+    socket.on('disconnect', () => {
+        console.log('Cliente desconectado:', socket.id);
+    });
+});
+server.listen(process.env.PORT, () => console.log('Server online!'));

@@ -12,28 +12,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateTableStatusService = void 0;
-const http_status_codes_1 = require("http-status-codes");
-const AppError_1 = require("../../errors/AppError");
+exports.ListLogsService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
-const socket_1 = require("../../@types/socket");
-const server_1 = require("../../server");
-class UpdateTableStatusService {
-    execute({ table_id, status }) {
+class ListLogsService {
+    execute({ user_id, startDate, endDate }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const table = yield prisma_1.default.table.findUnique({
-                where: { id: table_id }
-            });
-            if (!table) {
-                throw new AppError_1.AppError('Mesa não encontrada.', http_status_codes_1.StatusCodes.NOT_FOUND);
+            const where = {};
+            if (user_id) {
+                where.user_id = user_id;
             }
-            const updatedTable = yield prisma_1.default.table.update({
-                where: { id: table_id },
-                data: { status, updated_at: new Date() }
+            if (startDate || endDate) {
+                where.created_at = {};
+                if (startDate) {
+                    where.created_at.gte = startDate;
+                }
+                if (endDate) {
+                    where.created_at.lte = endDate;
+                }
+            }
+            const logs = yield prisma_1.default.log.findMany({
+                where,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    }
+                },
+                orderBy: {
+                    created_at: 'desc'
+                }
             });
-            yield server_1.io.emit(socket_1.SocketEvents.TABLE_STATUS_CHANGED);
-            return { data: updatedTable, message: 'Mesa editada com sucesso!' };
+            return { data: logs, message: 'List of logs' };
         });
     }
 }
-exports.UpdateTableStatusService = UpdateTableStatusService;
+exports.ListLogsService = ListLogsService;

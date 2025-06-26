@@ -16,6 +16,8 @@ exports.RemoveItemService = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const AppError_1 = require("../../errors/AppError");
 const prisma_1 = __importDefault(require("../../prisma"));
+const socket_1 = require("../../@types/socket");
+const server_1 = require("../../server");
 class RemoveItemService {
     execute({ item_id }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -42,6 +44,7 @@ class RemoveItemService {
                 where: { id: order.id },
                 data: { total }
             });
+            yield server_1.io.emit(socket_1.SocketEvents.ORDER_CHANGED, { table_id: order.table_id });
             return { message: 'Item removido com sucesso' };
         });
     }

@@ -9,31 +9,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SendOrderController = void 0;
-const SendOrderService_1 = require("../../services/order/SendOrderService");
+exports.ListLogsController = void 0;
+const ListLogsService_1 = require("../../services/log/ListLogsService");
 const http_status_codes_1 = require("http-status-codes");
 const AppError_1 = require("../../errors/AppError");
-const PrinterService_1 = require("../../services/printer/PrinterService");
-class SendOrderController {
+class ListLogsController {
     handle(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { order_id } = req.body;
-            const sendOrder = new SendOrderService_1.SendOrderService();
-            const printerService = new PrinterService_1.PrinterService();
+            const user_id = req.query.user_id;
+            const startDate = req.query.startDate;
+            const endDate = req.query.endDate;
+            const listLogsService = new ListLogsService_1.ListLogsService();
             try {
-                const orderResponse = yield sendOrder.execute({ order_id });
-                try {
-                    yield printerService.printKitchenOrder(order_id);
-                }
-                catch (err) {
-                    const printError = err instanceof AppError_1.AppError
-                        ? err.message
-                        : 'Erro inesperado durante execução do serviço de impressão.';
-                    orderResponse.message = orderResponse.message
-                        ? `${orderResponse.message} (Observação: ${printError})`
-                        : `Observação: ${printError}`;
-                }
-                return res.status(http_status_codes_1.StatusCodes.OK).json(orderResponse);
+                const logs = yield listLogsService.execute({
+                    user_id: user_id,
+                    startDate: startDate ? new Date(startDate) : undefined,
+                    endDate: endDate ? new Date(endDate) : undefined
+                });
+                return res.status(http_status_codes_1.StatusCodes.OK).json(logs);
             }
             catch (error) {
                 if (error instanceof AppError_1.AppError) {
@@ -46,4 +39,4 @@ class SendOrderController {
         });
     }
 }
-exports.SendOrderController = SendOrderController;
+exports.ListLogsController = ListLogsController;

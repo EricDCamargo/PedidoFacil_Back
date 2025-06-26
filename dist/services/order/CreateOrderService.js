@@ -17,6 +17,8 @@ const http_status_codes_1 = require("http-status-codes");
 const types_1 = require("../../@types/types");
 const AppError_1 = require("../../errors/AppError");
 const prisma_1 = __importDefault(require("../../prisma"));
+const socket_1 = require("../../@types/socket");
+const server_1 = require("../../server");
 class CreateOrderService {
     execute({ table_id, name }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,10 +39,12 @@ class CreateOrderService {
                 }
             });
             if (existingOrders.length === 0) {
-                yield prisma_1.default.table.update({
+                yield prisma_1.default.table
+                    .update({
                     where: { id: table_id },
                     data: { status: OCCUPIED }
-                });
+                })
+                    .then(() => server_1.io.emit(socket_1.SocketEvents.TABLE_STATUS_CHANGED));
             }
             const order = yield prisma_1.default.order.create({
                 data: {
@@ -49,6 +53,7 @@ class CreateOrderService {
                     status: DRAFT
                 }
             });
+            yield server_1.io.emit(socket_1.SocketEvents.ORDER_CHANGED, { table_id });
             return { data: order, message: 'Pedido criado!' };
         });
     }

@@ -17,6 +17,8 @@ const http_status_codes_1 = require("http-status-codes");
 const AppError_1 = require("../../errors/AppError");
 const types_1 = require("../../@types/types");
 const prisma_1 = __importDefault(require("../../prisma"));
+const socket_1 = require("../../@types/socket");
+const server_1 = require("../../server");
 class RemoveOrderService {
     execute({ order_id }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -44,9 +46,11 @@ class RemoveOrderService {
                     where: { order_id }
                 });
             }
-            const deletedOrder = yield prisma_1.default.order.delete({
+            const deletedOrder = yield prisma_1.default.order
+                .delete({
                 where: { id: order_id }
-            });
+            })
+                .then(() => server_1.io.emit(socket_1.SocketEvents.ORDER_CHANGED, { table_id: order.table_id }));
             // Check if there are any remaining orders for the table
             const hasRemainingOrders = yield prisma_1.default.order.findFirst({
                 where: {
@@ -61,6 +65,7 @@ class RemoveOrderService {
                     where: { id: order.table_id },
                     data: { status: types_1.TableStatus.AVAILABLE }
                 });
+                yield server_1.io.emit(socket_1.SocketEvents.TABLE_STATUS_CHANGED);
             }
             return { data: deletedOrder, message: 'Pedido removido com sucesso.' };
         });

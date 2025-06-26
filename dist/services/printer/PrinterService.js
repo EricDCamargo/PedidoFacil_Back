@@ -15,110 +15,194 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrinterService = void 0;
 const node_thermal_printer_1 = require("node-thermal-printer");
 const prisma_1 = __importDefault(require("../../prisma"));
+const AppError_1 = require("../../errors/AppError");
+const http_status_codes_1 = require("http-status-codes");
+const serialport_1 = require("serialport");
+const statusPt = {
+    DRAFT: 'Rascunho',
+    IN_PROGRESS: 'Em preparo',
+    COMPLETED: 'Finalizado',
+    PAID: 'Pago',
+    CLOSED: 'Fechado'
+};
 class PrinterService {
     constructor() {
-        this.printer = new node_thermal_printer_1.ThermalPrinter({
-            type: node_thermal_printer_1.PrinterTypes.EPSON,
-            interface: 'usb' // Interface da impressora
+        this.printerInterface = process.env.PRINTER_INTERFACE;
+    }
+    static checkSerialPort() {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (const baudRate of [115200]) {
+                try {
+                    const port = new serialport_1.SerialPort({
+                        path: process.env.PRINTER_INTERFACE,
+                        baudRate,
+                        autoOpen: false
+                    });
+                    yield new Promise((resolve, reject) => {
+                        port.open(err => (err ? reject(err) : resolve()));
+                    });
+                    port.close();
+                    return true;
+                }
+                catch (err) {
+                    console.warn(`Falha ao testar porta serial em ${baudRate}:`, err);
+                }
+            }
+            return false;
+        });
+    }
+    checkPortConection() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const portOk = yield PrinterService.checkSerialPort();
+            if (!portOk) {
+                throw new AppError_1.AppError('Impressora não conectada ou porta inacessível.', http_status_codes_1.StatusCodes.SERVICE_UNAVAILABLE);
+            }
+        });
+    }
+    initializePrinter() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.checkPortConection();
+            return new node_thermal_printer_1.ThermalPrinter({
+                type: node_thermal_printer_1.PrinterTypes.DARUMA,
+                interface: this.printerInterface,
+                characterSet: node_thermal_printer_1.CharacterSet.PC860_PORTUGUESE,
+                removeSpecialCharacters: false,
+                lineCharacter: '=',
+                breakLine: node_thermal_printer_1.BreakLine.WORD,
+                options: {
+                    timeout: 5000
+                }
+            });
         });
     }
     printPaidOrders(paidOrders) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { number } = yield prisma_1.default.table.findUnique({
-                where: { id: paidOrders[0].table_id },
-                select: { number: true }
-            });
-            // Cabeçalho
-            this.printer.println('Comprovante de Pagamento');
-            this.printer.println(`Mesa: ${number}`);
-            this.printer.println(`Data: ${new Date().toLocaleString()}`);
-            this.printer.drawLine();
-            // Detalhes dos pedidos pagos
-            for (const order of paidOrders) {
-                this.printer.println(`Pedido #${order.number}`);
+            try {
+                const printer = yield this.initializePrinter();
+                const { number } = yield prisma_1.default.table.findUnique({
+                    where: { id: paidOrders[0].table_id },
+                    select: { number: true }
+                });
+                printer.alignCenter();
+                printer.println('*** COMPROVANTE DE PAGAMENTO ***');
+                printer.println(`Mesa: ${number}`);
+                printer.println(`Data: ${new Date().toLocaleString()}`);
+                printer.drawLine();
+                let globalIndex = 1;
+                let totalGeral = 0;
+                for (const order of paidOrders) {
+                    printer.println(`Pedido #${order.number}`);
+                    printer.println('-------------------------------------------');
+                    printer.println('Item  Produto         Qtd  V.Unit   V.Total');
+                    printer.println('-------------------------------------------');
+                    let totalPedido = 0;
+                    for (const item of order.items) {
+                        const nome = (item.product.name || '').padEnd(14).substring(0, 14);
+                        const qtd = String(item.amount).padStart(3);
+                        const vUnit = `R$${item.unit_value.toFixed(2)}`.padStart(7);
+                        const vTotal = `R$${item.total_value.toFixed(2)}`.padStart(8);
+                        printer.println(`${globalIndex
+                            .toString()
+                            .padEnd(4)} ${nome}${qtd} ${vUnit} ${vTotal}`);
+                        totalPedido += item.total_value;
+                        globalIndex++;
+                    }
+                    printer.println('-------------------------------------------');
+                    printer.println(`Total do Pedido: R$${totalPedido.toFixed(2)}`);
+                    printer.drawLine();
+                    totalGeral += totalPedido;
+                }
+                printer.println(`TOTAL GERAL: R$${totalGeral.toFixed(2)}`);
+                printer.drawLine();
+                printer.newLine();
+                printer.cut();
+                const isPrinted = yield printer.execute();
+                if (!isPrinted) {
+                    throw new AppError_1.AppError('Erro ao imprimir o comprovante.');
+                }
+                return {
+                    message: 'Comprovante impresso com sucesso!'
+                };
+            }
+            catch (err) {
+                const msg = err instanceof AppError_1.AppError ? err.message : 'Erro ao imprimir.';
+                throw new AppError_1.AppError(msg);
+            }
+        });
+    }
+    printKitchenOrder(order_id) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const printer = yield this.initializePrinter();
+                const order = yield prisma_1.default.order.findUnique({
+                    where: { id: order_id },
+                    include: {
+                        items: {
+                            include: {
+                                product: { select: { name: true } }
+                            }
+                        },
+                        table: {
+                            select: { number: true }
+                        }
+                    }
+                });
+                printer.alignCenter();
+                printer.setTextDoubleHeight();
+                printer.println('*** COZINHA ***');
+                printer.drawLine();
+                printer.alignLeft();
+                printer.println(`PEDIDO: #${order.number}`);
+                printer.println(`MESA: ${order.table.number}`);
+                printer.println(`CLIENTE: ${order.name || '-'}`);
+                printer.println(`STATUS: ${statusPt[order.status] || order.status}`);
+                printer.println(`DATA: ${new Date(order.created_at).toLocaleString()}`);
+                printer.drawLine();
+                printer.println('ITENS:');
                 for (const item of order.items) {
-                    this.printer.println(`  ${item.amount}x ${item.product.name} - R$${item.total_value.toFixed(2)}`);
+                    printer.println(`- ${item.amount}x ${item.product.name}`);
+                    if ((_a = item.observation) === null || _a === void 0 ? void 0 : _a.trim()) {
+                        printer.println(`  Obs: ${item.observation}`);
+                    }
                 }
-                this.printer.println(`Total do Pedido: R$${order.total.toFixed(2)}`);
-                this.printer.drawLine();
+                printer.drawLine();
+                printer.newLine();
+                printer.drawLine();
+                printer.cut();
+                const isPrinted = yield printer.execute();
+                if (!isPrinted) {
+                    throw new AppError_1.AppError('Erro ao imprimir o pedido na cozinha.');
+                }
+                return {
+                    message: 'Pedido impresso com sucesso na cozinha!'
+                };
             }
-            // Finalizar e cortar o comprovante
-            this.printer.cut();
-            // Tentar imprimir
-            const isPrinted = yield this.printer.execute();
-            if (!isPrinted) {
-                throw new Error('Erro ao imprimir o comprovante.');
+            catch (err) {
+                const msg = err instanceof AppError_1.AppError ? err.message : 'Erro ao imprimir.';
+                throw new AppError_1.AppError(msg);
             }
         });
     }
-    printKitchenOrder(order) {
+    testPrinterConnection() {
         return __awaiter(this, void 0, void 0, function* () {
-            const { number } = yield prisma_1.default.table.findUnique({
-                where: { id: order.table_id },
-                select: { number: true }
-            });
-            // Cabeçalho
-            this.printer.println('Pedido para Cozinha');
-            this.printer.println(`Pedido #${order.number}`);
-            this.printer.println(`Mesa: ${number}`);
-            this.printer.println(`Data: ${new Date().toLocaleString()}`);
-            this.printer.drawLine();
-            // Detalhes dos itens do pedido
-            for (const item of order.items) {
-                this.printer.println(`${item.amount}x ${item.product.name} - R$${item.unit_value.toFixed(2)}`);
-                if (item.observation) {
-                    this.printer.println(`  Observação: ${item.observation}`);
+            try {
+                const printer = yield this.initializePrinter();
+                printer.alignCenter();
+                printer.println('Teste de Conexão');
+                printer.newLine();
+                printer.drawLine();
+                printer.cut();
+                const isPrinted = yield printer.execute();
+                if (!isPrinted) {
+                    throw new AppError_1.AppError('Impressora não conectada ou inacessível.', http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
                 }
+                return { message: 'Teste de conexão realizado com sucesso!' };
             }
-            this.printer.drawLine();
-            this.printer.println('Por favor, preparar com atenção!');
-            this.printer.cut();
-            // Tentar imprimir
-            const isPrinted = yield this.printer.execute();
-            if (!isPrinted) {
-                throw new Error('Erro ao imprimir o pedido na cozinha.');
+            catch (err) {
+                const msg = err instanceof AppError_1.AppError ? err.message : 'Erro ao imprimir.';
+                throw new AppError_1.AppError(msg);
             }
-        });
-    }
-    testPrintPaidOrders(paidOrders) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { number } = yield prisma_1.default.table.findUnique({
-                where: { id: paidOrders[0].table_id },
-                select: { number: true }
-            });
-            console.log('--- Comprovante de Pagamento ---');
-            console.log(`Mesa: ${number}`);
-            console.log(`Data: ${new Date().toLocaleString()}`);
-            console.log('-------------------------------');
-            for (const order of paidOrders) {
-                console.log(`Pedido #${order.number}`);
-                for (const item of order.items) {
-                    console.log(`  ${item.amount}x ${item.product.name} - R$${item.total_value.toFixed(2)}`);
-                }
-                console.log(`Total do Pedido: R$${order.total.toFixed(2)}`);
-                console.log('-------------------------------');
-            }
-        });
-    }
-    testPrintKitchenOrder(order) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { number } = yield prisma_1.default.table.findUnique({
-                where: { id: order.table_id },
-                select: { number: true }
-            });
-            console.log('--- Pedido para Cozinha ---');
-            console.log(`Pedido #${order.number}`);
-            console.log(`Mesa: ${number}`);
-            console.log(`Data: ${new Date().toLocaleString()}`);
-            console.log('---------------------------');
-            for (const item of order.items) {
-                console.log(`${item.amount}x ${item.product.name} - R$${item.unit_value.toFixed(2)}`);
-                if (item.observation) {
-                    console.log(`  Observação: ${item.observation}`);
-                }
-            }
-            console.log('---------------------------');
-            console.log('Por favor, preparar com atenção!');
         });
     }
 }

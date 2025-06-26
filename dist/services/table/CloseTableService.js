@@ -17,6 +17,8 @@ const http_status_codes_1 = require("http-status-codes");
 const types_1 = require("../../@types/types");
 const AppError_1 = require("../../errors/AppError");
 const prisma_1 = __importDefault(require("../../prisma"));
+const socket_1 = require("../../@types/socket");
+const server_1 = require("../../server");
 class CloseTableService {
     execute({ table_id }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -56,10 +58,12 @@ class CloseTableService {
                 where: { table_id, status: PAID },
                 data: { status: CLOSED }
             });
+            yield server_1.io.emit(socket_1.SocketEvents.ORDER_CHANGED);
             yield prisma_1.default.table.update({
                 where: { id: table_id },
                 data: { status: AVAILABLE }
             });
+            yield server_1.io.emit(socket_1.SocketEvents.TABLE_STATUS_CHANGED);
             return { message: 'Mesa fechada com sucesso!' };
         });
     }

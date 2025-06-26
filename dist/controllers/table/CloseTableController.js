@@ -26,7 +26,7 @@ class CloseTableController {
             const closeTableService = new CloseTableService_1.CloseTableService();
             const printerService = new PrinterService_1.PrinterService();
             try {
-                // Buscar pedidos com status em aberto, se tiver algum não é possível fechar a mesa
+                // Search for orders with open status, if there are any, it´s not possible to close the table.
                 const hasOpenOrders = yield prisma_1.default.order.findFirst({
                     where: {
                         table_id,
@@ -51,11 +51,18 @@ class CloseTableController {
                         items: { include: { product: true } }
                     }
                 });
-                const result = yield closeTableService.execute({
-                    table_id
-                });
-                // Imprimir os pedidos pagos
-                yield printerService.printPaidOrders(paidOrders);
+                const result = yield closeTableService.execute({ table_id });
+                try {
+                    yield printerService.printPaidOrders(paidOrders);
+                }
+                catch (err) {
+                    const printError = err instanceof AppError_1.AppError
+                        ? err.message
+                        : 'Erro inesperado durante execução do serviço de impressão.';
+                    result.message = result.message
+                        ? `${result.message} (Observação: ${printError})`
+                        : `Observação: ${printError}`;
+                }
                 return res.status(http_status_codes_1.StatusCodes.OK).json(result);
             }
             catch (error) {

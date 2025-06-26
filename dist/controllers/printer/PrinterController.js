@@ -9,31 +9,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SendOrderController = void 0;
-const SendOrderService_1 = require("../../services/order/SendOrderService");
+exports.PrinterController = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const AppError_1 = require("../../errors/AppError");
 const PrinterService_1 = require("../../services/printer/PrinterService");
-class SendOrderController {
-    handle(req, res) {
+class PrinterController {
+    testConection(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { order_id } = req.body;
-            const sendOrder = new SendOrderService_1.SendOrderService();
             const printerService = new PrinterService_1.PrinterService();
             try {
-                const orderResponse = yield sendOrder.execute({ order_id });
-                try {
-                    yield printerService.printKitchenOrder(order_id);
+                const print = yield printerService.testPrinterConnection();
+                return res.status(http_status_codes_1.StatusCodes.OK).json(print);
+            }
+            catch (error) {
+                if (error instanceof AppError_1.AppError) {
+                    return res.status(error.statusCode).json({ error: error.message });
                 }
-                catch (err) {
-                    const printError = err instanceof AppError_1.AppError
-                        ? err.message
-                        : 'Erro inesperado durante execução do serviço de impressão.';
-                    orderResponse.message = orderResponse.message
-                        ? `${orderResponse.message} (Observação: ${printError})`
-                        : `Observação: ${printError}`;
-                }
-                return res.status(http_status_codes_1.StatusCodes.OK).json(orderResponse);
+                return res
+                    .status(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR)
+                    .json({ error: 'Internal Server Error' });
+            }
+        });
+    }
+    printOrderToKitchen(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const order_id = req.query.order_id;
+            const printerService = new PrinterService_1.PrinterService();
+            try {
+                const print = yield printerService.printKitchenOrder(order_id);
+                return res.status(http_status_codes_1.StatusCodes.OK).json(print);
             }
             catch (error) {
                 if (error instanceof AppError_1.AppError) {
@@ -46,4 +50,4 @@ class SendOrderController {
         });
     }
 }
-exports.SendOrderController = SendOrderController;
+exports.PrinterController = PrinterController;

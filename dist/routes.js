@@ -35,10 +35,15 @@ const DeleteTableController_1 = require("./controllers/table/DeleteTableControll
 const PartialPaymentOrderController_1 = require("./controllers/payment/PartialPaymentOrderController");
 const DeletePaymentOrderController_1 = require("./controllers/payment/DeletePaymentOrderController");
 const UpdateCategoryController_1 = require("./controllers/category/UpdateCategoryController");
+const logMiddleware_1 = require("./middlewares/logMiddleware");
+const ListLogsController_1 = require("./controllers/log/ListLogsController");
+const PrinterController_1 = require("./controllers/printer/PrinterController");
 const router = (0, express_1.Router)();
 exports.router = router;
 // upload products using multer
 //const upload = multer(uploadconfig.upload('./tmp'))
+//Aplying logging middleware to all routes
+router.use(logMiddleware_1.logMiddleware);
 // -- User Routes --
 router.post('/users', new CreateUserController_1.CreateUserController().handle);
 router.post('/session', new AuthUserController_1.AuthUserController().handle);
@@ -79,3 +84,8 @@ router.delete('/table', isAuthenticated_1.isAuthenticated, isAuthenticated_1.isA
 // -- Payment Routes --
 router.post('/order/payment', isAuthenticated_1.isAuthenticated, new PartialPaymentOrderController_1.PartialPaymentOrderController().handle);
 router.delete('/order/payment', isAuthenticated_1.isAuthenticated, new DeletePaymentOrderController_1.DeletePaymentOrderController().handle);
+// -- Logs Routes --
+router.get('/logs', isAuthenticated_1.isAuthenticated, isAuthenticated_1.isAdmin, new ListLogsController_1.ListLogsController().handle);
+// -- Printer Routes --
+router.post('/printer/test', isAuthenticated_1.isAuthenticated, new PrinterController_1.PrinterController().testConection);
+router.post('/printer/order', isAuthenticated_1.isAuthenticated, new PrinterController_1.PrinterController().printOrderToKitchen);
