@@ -18,7 +18,7 @@ const types_1 = require("../../@types/types");
 const AppError_1 = require("../../errors/AppError");
 const prisma_1 = __importDefault(require("../../prisma"));
 const socket_1 = require("../../@types/socket");
-const server_1 = require("../../server");
+const socket_2 = require("../../utils/socket");
 class CreateOrderService {
     execute({ table_id, name }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -44,7 +44,7 @@ class CreateOrderService {
                     where: { id: table_id },
                     data: { status: OCCUPIED }
                 })
-                    .then(() => server_1.io.emit(socket_1.SocketEvents.TABLE_STATUS_CHANGED));
+                    .then(() => (0, socket_2.emitSocketEvent)(socket_1.SocketEvents.TABLE_STATUS_CHANGED));
             }
             const order = yield prisma_1.default.order.create({
                 data: {
@@ -53,7 +53,7 @@ class CreateOrderService {
                     status: DRAFT
                 }
             });
-            yield server_1.io.emit(socket_1.SocketEvents.ORDER_CHANGED, { table_id });
+            (0, socket_2.emitSocketEvent)(socket_1.SocketEvents.ORDER_CHANGED, { table_id });
             return { data: order, message: 'Pedido criado!' };
         });
     }

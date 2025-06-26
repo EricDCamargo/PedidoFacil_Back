@@ -35,18 +35,20 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   })
 })
 
-const server = http.createServer(app)
+let io: Server | undefined
 
-const io = new Server(server)
+if (process.env.USE_SOCKET === 'true') {
+  const server = http.createServer(app)
+  io = new Server(server)
 
-io.on('connection', socket => {
-  console.log('Novo cliente conectado:', socket.id)
-
-  socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id)
+  io.on('connection', socket => {
+    console.log('Novo cliente conectado:', socket.id)
   })
-})
 
-server.listen(process.env.PORT, () => console.log('Server online!'))
+  server.listen(process.env.PORT || 3333, () => {
+    console.log('Server online com socket!')
+  })
+}
 
+export default app
 export { io }

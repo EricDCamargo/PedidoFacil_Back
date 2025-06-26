@@ -3,7 +3,7 @@ import { AppResponse } from '../../@types/app.types'
 import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 import { SocketEvents } from '../../@types/socket'
-import { io } from '../../server'
+import { emitSocketEvent } from '../../utils/socket'
 
 interface ItemRequest {
   order_id: string
@@ -66,7 +66,7 @@ class AddItemService {
       where: { id: order_id },
       data: { total }
     })
-    await io.emit(SocketEvents.ORDER_CHANGED, { table_id: order.table_id })
+    emitSocketEvent(SocketEvents.ORDER_CHANGED, { table_id: order.table_id })
 
     return { data: item, message: 'Item adicionado ao pedido!' }
   }

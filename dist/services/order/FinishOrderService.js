@@ -18,7 +18,7 @@ const AppError_1 = require("../../errors/AppError");
 const types_1 = require("../../@types/types");
 const prisma_1 = __importDefault(require("../../prisma"));
 const socket_1 = require("../../@types/socket");
-const server_1 = require("../../server");
+const socket_2 = require("../../utils/socket");
 class FinishOrderService {
     execute({ order_id }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,7 +36,7 @@ class FinishOrderService {
                 where: { id: order_id },
                 data: { status: COMPLETED, updated_at: new Date() }
             });
-            yield server_1.io.emit(socket_1.SocketEvents.ORDER_CHANGED, { table_id: order.table_id });
+            (0, socket_2.emitSocketEvent)(socket_1.SocketEvents.ORDER_CHANGED, { table_id: order.table_id });
             return { data: updatedOrder, message: 'Pedido finalizado com sucesso!' };
         });
     }

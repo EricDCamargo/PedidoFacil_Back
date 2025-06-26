@@ -15,8 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.logMiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma_1 = __importDefault(require("../prisma"));
-const server_1 = require("../server");
 const socket_1 = require("../@types/socket");
+const socket_2 = require("../utils/socket");
 function logMiddleware(req, res, next) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -42,7 +42,7 @@ function logMiddleware(req, res, next) {
                     details
                 }
             });
-            yield server_1.io.emit(socket_1.SocketEvents.LOG_CREATED);
+            (0, socket_2.emitSocketEvent)(socket_1.SocketEvents.LOG_CREATED);
         }
         catch (error) {
             console.error('Erro ao registrar log:', error);

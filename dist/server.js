@@ -33,13 +33,15 @@ app.use((err, req, res, next) => {
         messege: 'Internal server error'
     });
 });
-const server = http_1.default.createServer(app);
-const io = new socket_io_1.Server(server);
-exports.io = io;
-io.on('connection', socket => {
-    console.log('Novo cliente conectado:', socket.id);
-    socket.on('disconnect', () => {
-        console.log('Cliente desconectado:', socket.id);
+let io;
+if (process.env.USE_SOCKET === 'true') {
+    const server = http_1.default.createServer(app);
+    exports.io = io = new socket_io_1.Server(server);
+    io.on('connection', socket => {
+        console.log('Novo cliente conectado:', socket.id);
     });
-});
-server.listen(process.env.PORT, () => console.log('Server online!'));
+    server.listen(process.env.PORT || 3333, () => {
+        console.log('Server online com socket!');
+    });
+}
+exports.default = app;

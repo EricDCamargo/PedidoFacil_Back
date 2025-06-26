@@ -4,7 +4,7 @@ import { OrderStatus, TableStatus } from '../../@types/types'
 import { AppError } from '../../errors/AppError'
 import prismaClient from '../../prisma'
 import { SocketEvents } from '../../@types/socket'
-import { io } from '../../server'
+import { emitSocketEvent } from '../../utils/socket'
 
 interface CloseTableRequest {
   table_id: string
@@ -62,13 +62,13 @@ class CloseTableService {
       where: { table_id, status: PAID },
       data: { status: CLOSED }
     })
-    await io.emit(SocketEvents.ORDER_CHANGED)
+    emitSocketEvent(SocketEvents.ORDER_CHANGED)
 
     await prismaClient.table.update({
       where: { id: table_id },
       data: { status: AVAILABLE }
     })
-    await io.emit(SocketEvents.TABLE_STATUS_CHANGED)
+    emitSocketEvent(SocketEvents.TABLE_STATUS_CHANGED)
 
     return { message: 'Mesa fechada com sucesso!' }
   }
