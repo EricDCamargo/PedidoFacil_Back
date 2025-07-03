@@ -10,13 +10,12 @@ services:
     networks:
       - pedidofacil_default
     restart: unless-stopped
+    privileged: true
     env_file: .env.local
     depends_on:
       - db
     command: >
       sh -c "npx prisma migrate deploy && node dist/server.js"
-    devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
 
   db:
     image: postgres:15
